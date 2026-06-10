@@ -20,15 +20,21 @@
   --text-dim: #556;
   --accent: #7cafc2;
 
-  /* ── Morpheme-segment hues (each a toggleable layer) ── */
-  --m-pfx:  #5eead4;   /* prefix particle (glued prep/art/conj)  — teal     */
-  --m-pfm:  #f87171;   /* preformative (imperfect/wayyiqtol)     — red      */
-  --m-vbs:  #fbbf24;   /* verbal-stem affix (hif/nif/hit…)       — amber    */
-  --m-vbe:  #c084fc;   /* verbal ending (person/gender/number)   — purple   */
-  --m-nme:  #60a5fa;   /* nominal ending                         — blue     */
-  --m-uvf:  #a3e635;   /* univalent final (directional he…)      — lime     */
-  --m-prs:  #f472b6;   /* pronominal suffix                      — pink     */
-  /* stm (core/stem) stays near text colour — it is the default */
+  /* ── Morpheme-segment hues (each a toggleable layer) ──
+     Temperature encodes morpheme FUNCTION (pedagogical grouping):
+       WARM (red→orange→amber) = VERB machinery, gradient follows
+         position in the word: preformative → stem affix → ending
+       COOL BLUE/CYAN          = NOUN machinery: ending, univalent final
+       GREEN                   = prefixed particles (ו, ב, ל, כ, ה…)
+       PINK                    = pronominal suffix (the pronoun in the word)
+     stm (core/stem) stays near text colour — it is the default. */
+  --m-pfm:  #ef5350;   /* preformative (imperfect/wayyiqtol)   — warm: red    */
+  --m-vbs:  #f59e0b;   /* verbal-stem affix (hif ה, nif נ…)    — warm: orange */
+  --m-vbe:  #eecf6d;   /* verbal ending (person/gender/number) — warm: amber  */
+  --m-nme:  #60a5fa;   /* nominal ending                       — cool: blue   */
+  --m-uvf:  #4dd0e1;   /* univalent final (directional he…)    — cool: cyan   */
+  --m-pfx:  #66bb6a;   /* prefix particle (glued prep/art/conj) — green       */
+  --m-prs:  #f06ea9;   /* pronominal suffix                     — pink        */
 
   /* ── Binyan tint colours (subtle underline under the verb) ── */
   --b-qal:   #7da3c8;
@@ -93,6 +99,8 @@ body { background:var(--bg-deep); color:var(--text-primary); font-family:var(--f
 .cd-link:hover { color:var(--text-primary); }
 .cd-item { display:flex; align-items:center; gap:9px; padding:7px 14px; cursor:pointer; transition:background var(--tr); }
 .cd-item:hover { background:rgba(255,255,255,.03); }
+.cd-group { padding:8px 14px 2px; font-size:10.5px; letter-spacing:.08em;
+            text-transform:uppercase; color:var(--text-dim); user-select:none; }
 .cd-box {
   width:16px; height:16px; border:1.5px solid var(--border-bright); border-radius:3px;
   position:relative; transition:all var(--tr); flex-shrink:0;
@@ -394,10 +402,7 @@ details.lg-sec > .lg-row:last-child { padding-bottom:10px; }
           <span class="cd-link" onclick="catAll('morph')">Select All</span>
           <span class="cd-link" onclick="catNone('morph')">Clear All</span>
         </div>
-        <div class="cd-item" data-l="pfx" onclick="togL('pfx')" style="--ac:var(--m-pfx)">
-          <span class="cd-box"></span><span class="cd-name">Prefix particles</span>
-          <span class="cd-swatch" style="background:var(--m-pfx)"></span>
-        </div>
+        <div class="cd-group">Verb morphology — warm</div>
         <div class="cd-item" data-l="pfm" onclick="togL('pfm')" style="--ac:var(--m-pfm)">
           <span class="cd-box"></span><span class="cd-name">Preformative</span>
           <span class="cd-swatch" style="background:var(--m-pfm)"></span>
@@ -410,6 +415,7 @@ details.lg-sec > .lg-row:last-child { padding-bottom:10px; }
           <span class="cd-box"></span><span class="cd-name">Verbal ending</span>
           <span class="cd-swatch" style="background:var(--m-vbe)"></span>
         </div>
+        <div class="cd-group">Noun morphology — cool</div>
         <div class="cd-item" data-l="nme" onclick="togL('nme')" style="--ac:var(--m-nme)">
           <span class="cd-box"></span><span class="cd-name">Nominal ending</span>
           <span class="cd-swatch" style="background:var(--m-nme)"></span>
@@ -417,6 +423,11 @@ details.lg-sec > .lg-row:last-child { padding-bottom:10px; }
         <div class="cd-item" data-l="uvf" onclick="togL('uvf')" style="--ac:var(--m-uvf)">
           <span class="cd-box"></span><span class="cd-name">Univalent final</span>
           <span class="cd-swatch" style="background:var(--m-uvf)"></span>
+        </div>
+        <div class="cd-group">Attached elements</div>
+        <div class="cd-item" data-l="pfx" onclick="togL('pfx')" style="--ac:var(--m-pfx)">
+          <span class="cd-box"></span><span class="cd-name">Prefix particles</span>
+          <span class="cd-swatch" style="background:var(--m-pfx)"></span>
         </div>
         <div class="cd-item" data-l="prs" onclick="togL('prs')" style="--ac:var(--m-prs)">
           <span class="cd-box"></span><span class="cd-name">Pronominal suffix</span>
@@ -467,19 +478,20 @@ details.lg-sec > .lg-row:last-child { padding-bottom:10px; }
       <div class="lg-worked">
         <span style="color:var(--m-pfm);font-weight:600">יְ</span><span>הִי</span>
       </div>
-      <div class="lg-row"><span class="lg-name" style="min-width:0">וַיְהִי</span><span class="lg-desc">wayyiqtol of <b>היה</b> "be" — the red <b>יְ</b> is the preformative; הִי the core/stem. The וַ prefix is a separate glued particle (teal).</span></div>
-      <div class="lg-row"><span class="lg-ex"><span style="color:var(--m-vbe)">ְתָה</span>הָי</span><span class="lg-name" style="min-width:0">הָיְתָה</span><span class="lg-desc">core הָי + purple verbal ending ְתָה (3fs perfect).</span></div>
+      <div class="lg-row"><span class="lg-name" style="min-width:0">וַיְהִי</span><span class="lg-desc">wayyiqtol of <b>היה</b> "be" — the red <b>יְ</b> is the preformative; הִי the core/stem. The וַ prefix is a separate glued particle (green).</span></div>
+      <div class="lg-row"><span class="lg-ex"><span style="color:var(--m-vbe)">ְתָה</span>הָי</span><span class="lg-name" style="min-width:0">הָיְתָה</span><span class="lg-desc">core הָי + amber verbal ending ְתָה (3fs perfect).</span></div>
     </details>
     <details class="lg-sec">
       <summary>Morpheme colours</summary>
+      <div class="lg-row"><span class="lg-desc" style="min-width:0"><b>The temperature tells you the function:</b> warm colours (red → orange → amber, in word order) mark VERB morphology; cool blues mark NOUN morphology; green marks prefixed particles; pink marks an attached pronoun.</span></div>
+      <div class="lg-row"><span class="lg-sw" style="background:var(--m-pfm)"></span><span class="lg-name">Preformative</span><span class="lg-desc">verb — imperfect / wayyiqtol prefix (יִקְטֹל)</span></div>
+      <div class="lg-row"><span class="lg-sw" style="background:var(--m-vbs)"></span><span class="lg-name">Stem affix</span><span class="lg-desc">verb — hif ה, nif נ, hit הת</span></div>
+      <div class="lg-row"><span class="lg-sw" style="background:var(--m-vbe)"></span><span class="lg-name">Verbal ending</span><span class="lg-desc">verb — person/gender/number (קָטַלְתָּ)</span></div>
+      <div class="lg-row"><span class="lg-sw" style="background:var(--m-nme)"></span><span class="lg-name">Nominal ending</span><span class="lg-desc">noun — ִים, ֹות, ֵי</span></div>
+      <div class="lg-row"><span class="lg-sw" style="background:var(--m-uvf)"></span><span class="lg-name">Univalent final</span><span class="lg-desc">noun — directional he (אַרְצָה), paragogic</span></div>
       <div class="lg-row"><span class="lg-sw" style="background:var(--m-pfx)"></span><span class="lg-name">Prefix particle</span><span class="lg-desc">glued ו / ב / ל / כ / ה-article</span></div>
-      <div class="lg-row"><span class="lg-sw" style="background:var(--m-pfm)"></span><span class="lg-name">Preformative</span><span class="lg-desc">imperfect / wayyiqtol prefix (יִקְטֹל)</span></div>
-      <div class="lg-row"><span class="lg-sw" style="background:var(--m-vbs)"></span><span class="lg-name">Stem affix</span><span class="lg-desc">hif ה, nif נ, hit הת</span></div>
-      <div class="lg-row"><span class="lg-sw" style="background:rgba(216,212,204,.4)"></span><span class="lg-name">Core / stem</span><span class="lg-desc">the lexeme root — left at text colour</span></div>
-      <div class="lg-row"><span class="lg-sw" style="background:var(--m-vbe)"></span><span class="lg-name">Verbal ending</span><span class="lg-desc">person/gender/number (קָטַלְתָּ)</span></div>
-      <div class="lg-row"><span class="lg-sw" style="background:var(--m-nme)"></span><span class="lg-name">Nominal ending</span><span class="lg-desc">ִים, ֹות, ֵי</span></div>
-      <div class="lg-row"><span class="lg-sw" style="background:var(--m-uvf)"></span><span class="lg-name">Univalent final</span><span class="lg-desc">directional he (אַרְצָה), paragogic</span></div>
       <div class="lg-row"><span class="lg-sw" style="background:var(--m-prs)"></span><span class="lg-name">Pronominal suffix</span><span class="lg-desc">attached pronoun (אֶחָיו)</span></div>
+      <div class="lg-row"><span class="lg-sw" style="background:rgba(216,212,204,.4)"></span><span class="lg-name">Core / stem</span><span class="lg-desc">the lexeme root — left at text colour</span></div>
     </details>
     <details class="lg-sec">
       <summary>Binyan (verbal stem)</summary>
