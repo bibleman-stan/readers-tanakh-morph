@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tanakh Morpheme Reader</title>
+<meta name="description" content="Morpheme-by-morpheme Hebrew Bible reader — every word color-coded by prefix, preformative, stem, ending, and suffix, with binyan badges.">
+<meta property="og:title" content="Tanakh Morpheme Reader">
+<meta property="og:description" content="Morpheme-by-morpheme Hebrew Bible reader with color-coded morphology layers and binyan badges.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<style>
+:root {
+  --bg:#1b1d22; --fg:#e8e6e0; --dim:#9a978f; --card:#26282f;
+  --accent:#d9a548; --link:#8db4e2;
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg);
+       font:16px/1.6 Georgia, 'Times New Roman', serif; }
+.wrap { max-width:880px; margin:0 auto; padding:32px 20px 64px; }
+h1 { font-size:1.9em; margin:0 0 4px; color:var(--accent); }
+.sub { color:var(--dim); margin:0 0 28px; }
+.heb { font-family:'SBL Hebrew','Ezra SIL','Taamey Frank CLM','David Libre',serif;
+        font-size:1.35em; direction:rtl; }
+h2 { font-size:1.1em; color:var(--dim); text-transform:uppercase;
+     letter-spacing:.08em; margin:30px 0 10px; border-bottom:1px solid #34363e;
+     padding-bottom:4px; }
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+        gap:8px; }
+.bk { display:block; background:var(--card); border-radius:8px; padding:10px 12px;
+      text-decoration:none; color:var(--fg); border:1px solid #34363e; }
+.bk:hover { border-color:var(--accent); }
+.bk .n { font-weight:bold; }
+.bk .c { color:var(--dim); font-size:.85em; }
+.note { background:var(--card); border-radius:8px; padding:14px 16px;
+        margin:24px 0; color:var(--dim); font-size:.95em; }
+.note b { color:var(--fg); }
+a { color:var(--link); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Tanakh Morpheme Reader</h1>
+  <p class="sub">Every word of the Hebrew Bible, decomposed.
+     <span class="heb">בְּ·רֵאשִׁ֖ית בָּרָ֣א אֱלֹהִ֑ים</span></p>
+
+  <div class="note">
+    Each Hebrew word is split into its morphological pieces — prefix particles,
+    preformative, stem, verbal/nominal endings, pronominal suffixes — rendered as
+    color-coded layers you can toggle. Verbs carry <b>binyan</b> badges
+    (Qal, Nifal, Piel, Pual, Hifil, Hofal, Hitpael). Niqqud shows by default;
+    cantillation (te&rsquo;amim) is a toggle. Tap any word for its full
+    morphology and gloss. Line layout follows the
+    <a href="https://tanakh-reader.com">Tanakh Reader</a>&rsquo;s sense lines;
+    morphology is sourced from the
+    <a href="https://github.com/ETCBC/bhsa">BHSA</a> (ETCBC).
+    Greek sibling: <a href="https://morph.gnt-reader.com">morph.gnt-reader.com</a>.
+  </div>
+
+  <h2>Torah</h2>
+  <div class="grid">
+    <a class="bk" href="genesis/1.html"><span class="n">Genesis</span><br><span class="c">50 chapters</span></a>
+    <a class="bk" href="exodus/1.html"><span class="n">Exodus</span><br><span class="c">40 chapters</span></a>
+    <a class="bk" href="leviticus/1.html"><span class="n">Leviticus</span><br><span class="c">27 chapters</span></a>
+    <a class="bk" href="numbers/1.html"><span class="n">Numbers</span><br><span class="c">36 chapters</span></a>
+    <a class="bk" href="deuteronomy/1.html"><span class="n">Deuteronomy</span><br><span class="c">34 chapters</span></a>
+  </div>
+  <h2>Former Prophets</h2>
+  <div class="grid">
+    <a class="bk" href="joshua/1.html"><span class="n">Joshua</span><br><span class="c">24 chapters</span></a>
+    <a class="bk" href="judges/1.html"><span class="n">Judges</span><br><span class="c">21 chapters</span></a>
+    <a class="bk" href="1samuel/1.html"><span class="n">1 Samuel</span><br><span class="c">31 chapters</span></a>
+    <a class="bk" href="2samuel/1.html"><span class="n">2 Samuel</span><br><span class="c">24 chapters</span></a>
+    <a class="bk" href="1kings/1.html"><span class="n">1 Kings</span><br><span class="c">22 chapters</span></a>
+    <a class="bk" href="2kings/1.html"><span class="n">2 Kings</span><br><span class="c">25 chapters</span></a>
+  </div>
+  <h2>Latter Prophets</h2>
+  <div class="grid">
+    <a class="bk" href="isaiah/1.html"><span class="n">Isaiah</span><br><span class="c">66 chapters</span></a>
+    <a class="bk" href="jeremiah/1.html"><span class="n">Jeremiah</span><br><span class="c">52 chapters</span></a>
+    <a class="bk" href="ezekiel/1.html"><span class="n">Ezekiel</span><br><span class="c">48 chapters</span></a>
+    <a class="bk" href="hosea/1.html"><span class="n">Hosea</span><br><span class="c">14 chapters</span></a>
+    <a class="bk" href="joel/1.html"><span class="n">Joel</span><br><span class="c">4 chapters</span></a>
+    <a class="bk" href="amos/1.html"><span class="n">Amos</span><br><span class="c">9 chapters</span></a>
+    <a class="bk" href="obadiah/1.html"><span class="n">Obadiah</span><br><span class="c">1 chapter</span></a>
+    <a class="bk" href="jonah/1.html"><span class="n">Jonah</span><br><span class="c">4 chapters</span></a>
+    <a class="bk" href="micah/1.html"><span class="n">Micah</span><br><span class="c">7 chapters</span></a>
+    <a class="bk" href="nahum/1.html"><span class="n">Nahum</span><br><span class="c">3 chapters</span></a>
+    <a class="bk" href="habakkuk/1.html"><span class="n">Habakkuk</span><br><span class="c">3 chapters</span></a>
+    <a class="bk" href="zephaniah/1.html"><span class="n">Zephaniah</span><br><span class="c">3 chapters</span></a>
+    <a class="bk" href="haggai/1.html"><span class="n">Haggai</span><br><span class="c">2 chapters</span></a>
+    <a class="bk" href="zechariah/1.html"><span class="n">Zechariah</span><br><span class="c">14 chapters</span></a>
+    <a class="bk" href="malachi/1.html"><span class="n">Malachi</span><br><span class="c">3 chapters</span></a>
+  </div>
+  <h2>Writings</h2>
+  <div class="grid">
+    <a class="bk" href="psalms/1.html"><span class="n">Psalms</span><br><span class="c">150 chapters</span></a>
+    <a class="bk" href="job/1.html"><span class="n">Job</span><br><span class="c">42 chapters</span></a>
+    <a class="bk" href="proverbs/1.html"><span class="n">Proverbs</span><br><span class="c">31 chapters</span></a>
+    <a class="bk" href="ruth/1.html"><span class="n">Ruth</span><br><span class="c">4 chapters</span></a>
+    <a class="bk" href="songofsongs/1.html"><span class="n">Song of Songs</span><br><span class="c">8 chapters</span></a>
+    <a class="bk" href="ecclesiastes/1.html"><span class="n">Ecclesiastes</span><br><span class="c">12 chapters</span></a>
+    <a class="bk" href="lamentations/1.html"><span class="n">Lamentations</span><br><span class="c">5 chapters</span></a>
+    <a class="bk" href="esther/1.html"><span class="n">Esther</span><br><span class="c">10 chapters</span></a>
+    <a class="bk" href="daniel/1.html"><span class="n">Daniel</span><br><span class="c">12 chapters</span></a>
+    <a class="bk" href="ezra/1.html"><span class="n">Ezra</span><br><span class="c">10 chapters</span></a>
+    <a class="bk" href="nehemiah/1.html"><span class="n">Nehemiah</span><br><span class="c">13 chapters</span></a>
+    <a class="bk" href="1chronicles/1.html"><span class="n">1 Chronicles</span><br><span class="c">29 chapters</span></a>
+    <a class="bk" href="2chronicles/1.html"><span class="n">2 Chronicles</span><br><span class="c">36 chapters</span></a>
+  </div>
+</div>
+</body>
+</html>

@@ -31,6 +31,7 @@ _HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, _HERE)
 from books import BOOKS
 import generate_chapter as gc
+from known_divergences import KNOWN_DIVERGENCES
 
 BUILD_DIR = gc.BUILD_DIR
 
@@ -126,7 +127,14 @@ def validate_chapter(book_code, chapter, api=None):
         c5_count_bad = []
         c5_content_bad = []
         c5_form_drift = 0
+        c5_known = 0
         for vnum, slines in sense.items():
+            if (book_code, chapter, vnum) in KNOWN_DIVERGENCES:
+                # Documented TAHOT-vs-BHSA textual divergence (ketiv/qere
+                # whole-word swap or MT plus/minus) — content comparison is
+                # meaningless here; the opcode aligner degrades gracefully.
+                c5_known += 1
+                continue
             jlines = verse_lines.get(vnum, [])
             sl = [''.join(gc._matchform(t) for t in line) for line in slines]
             jl = [''.join(line) for line in jlines]
