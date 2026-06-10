@@ -672,6 +672,16 @@ function buildUnits(data) {
   return units;
 }
 
+// HTML-escape data-derived strings before innerHTML interpolation.
+// Load-bearing: BHSA glosses include literal angle brackets — e.g. את's
+// gloss is '<object marker>' — which the browser otherwise parses as a
+// real unclosed <object> element that swallows the rest of the chapter.
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 // Render one BHSA record's segments to coloured spans.
 function renderSegs(rec) {
   let html = '';
@@ -680,7 +690,7 @@ function renderSegs(rec) {
   segs.forEach(seg => {
     // Prefix particles get class pfx (word-level), regardless of seg class.
     const cls = isPrefixParticle ? 'pfx' : (seg.m || 'whole');
-    html += `<span class="s m-${cls}">${shape(seg.t)}</span>`;
+    html += `<span class="s m-${cls}">${esc(shape(seg.t))}</span>`;
   });
   return html;
 }
@@ -720,7 +730,7 @@ function render() {
 
     // Gloss hint — use the head record's gloss (the lexeme the unit centres on).
     let glHint = '';
-    if (head.gl) glHint = `<span class="gl-hint">${head.gl}</span>`;
+    if (head.gl) glHint = `<span class="gl-hint">${esc(head.gl)}</span>`;
 
     h += `<span class="${wCls}" onclick="showPanel(${ui})">${inner}${glHint}</span>`;
 
@@ -742,26 +752,26 @@ function showPanel(ui) {
 
   // Surface = the whole printed unit (all constituents joined).
   const surf = u.recs.map(r => shape(r.txt || '')).join('');
-  let html = `<div class="p-surface">${surf}</div>`;
+  let html = `<div class="p-surface">${esc(surf)}</div>`;
   html += '<div class="p-grid">';
 
-  html += `<div class="p-label">Lemma</div><div class="p-val heb">${head.lem || '-'}</div>`;
-  if (head.sp) html += `<div class="p-label">Class</div><div class="p-val">${SP_LABEL[head.sp] || head.sp}</div>`;
-  if (head.gl) html += `<div class="p-label">Gloss</div><div class="p-val">${head.gl}</div>`;
+  html += `<div class="p-label">Lemma</div><div class="p-val heb">${esc(head.lem || '-')}</div>`;
+  if (head.sp) html += `<div class="p-label">Class</div><div class="p-val">${esc(SP_LABEL[head.sp] || head.sp)}</div>`;
+  if (head.gl) html += `<div class="p-label">Gloss</div><div class="p-val">${esc(head.gl)}</div>`;
 
   if (head.sp === 'verb') {
     if (head.vsd) {
       const cls = BINYAN_CLS[head.vsc] || 'minor';
-      html += `<div class="p-label">Binyan</div><div class="p-val"><span class="binyan-badge" style="background:var(--b-${cls})">${head.vsd}</span></div>`;
+      html += `<div class="p-label">Binyan</div><div class="p-val"><span class="binyan-badge" style="background:var(--b-${cls})">${esc(head.vsd)}</span></div>`;
     }
-    if (head.vtd) html += `<div class="p-label">Tense</div><div class="p-val">${head.vtd}</div>`;
+    if (head.vtd) html += `<div class="p-label">Tense</div><div class="p-val">${esc(head.vtd)}</div>`;
   }
   const feats = [];
   if (head.ps) feats.push(PS_LABEL[head.ps] || head.ps);
   if (head.gn) feats.push(GN_LABEL[head.gn] || head.gn);
   if (head.nu) feats.push(NU_LABEL[head.nu] || head.nu);
-  if (feats.length) html += `<div class="p-label">Person</div><div class="p-val">${feats.join(' ')}</div>`;
-  if (head.st) html += `<div class="p-label">State</div><div class="p-val">${ST_LABEL[head.st] || head.st}</div>`;
+  if (feats.length) html += `<div class="p-label">Person</div><div class="p-val">${esc(feats.join(' '))}</div>`;
+  if (head.st) html += `<div class="p-label">State</div><div class="p-val">${esc(ST_LABEL[head.st] || head.st)}</div>`;
   if (u.recs.some(r => r.arc)) html += `<div class="p-label">Language</div><div class="p-val">Aramaic</div>`;
   html += '</div>';
 
@@ -770,8 +780,8 @@ function showPanel(ui) {
     const multi = u.recs.length > 1;
     html += '<div class="p-const">';
     if (multi) {
-      html += `<div class="p-const-head"><span class="p-const-surf">${shape(rec.txt||'')}</span>` +
-              `<span class="p-const-gloss">${rec.lem || ''}${rec.gl ? ' &middot; ' + rec.gl : ''}</span></div>`;
+      html += `<div class="p-const-head"><span class="p-const-surf">${esc(shape(rec.txt||''))}</span>` +
+              `<span class="p-const-gloss">${esc(rec.lem || '')}${rec.gl ? ' &middot; ' + esc(rec.gl) : ''}</span></div>`;
     }
     html += '<div class="mb">';
     const isPfx = rec.glue && ['prep','art','conj'].includes(rec.sp);
@@ -779,8 +789,8 @@ function showPanel(ui) {
     segs.forEach(seg => {
       const m = isPfx ? 'pfx' : (seg.m || 'whole');
       const lbl = SEG_LABEL[m] || m;
-      const t = shape(seg.t) || '—';
-      html += `<span class="mb-piece mb-${m}">${t} <small>${lbl}</small></span>`;
+      const t = esc(shape(seg.t) || '—');
+      html += `<span class="mb-piece mb-${m}">${t} <small>${esc(lbl)}</small></span>`;
     });
     html += '</div></div>';
   });
