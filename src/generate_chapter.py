@@ -87,7 +87,7 @@ def tf_api():
             'g_word_utf8 trailer_utf8 '
             'g_pfm_utf8 g_vbs_utf8 g_lex_utf8 g_vbe_utf8 '
             'g_nme_utf8 g_prs_utf8 g_uvf_utf8 '
-            'vs vt sp ps gn nu st lex language gloss '
+            'vs vt sp ps gn nu st lex language gloss freq_lex '
         )
         TF = Fabric(locations=BHSA_TF, silent=True)
         _api = TF.load(features, silent=True)
@@ -218,6 +218,11 @@ def word_record(api, w):
         gl = F.gloss.v(lex_node[0])
         if gl:
             rec['gl'] = gl
+        # Lexeme frequency (BHSA freq_lex) — drives the gloss frequency
+        # bands (show glosses only for words rarer than the chosen band).
+        fq = F.freq_lex.v(w)
+        if fq:
+            rec['fq'] = fq
 
     vs = F.vs.v(w)
     if vs and vs != 'NA':
