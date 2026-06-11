@@ -51,6 +51,7 @@
   --heb-size: 34px;
   --line-h: 2.15;
   --line-h-gl: 2.5;
+  --line-h-both: 3.1;   /* translit + gloss hints stacked */
   --wrap-indent: 1.5em;
   --verse-gap: 10px;
   --tr: 150ms ease;
@@ -206,6 +207,34 @@ body { background:var(--bg-deep); color:var(--text-primary); font-family:var(--f
 .L-gloss .w { position:relative; }
 .L-gloss .gl-hint { display:block; }
 .L-gloss #verse-output { line-height:var(--line-h-gl); }
+
+/* ═══ TRANSLITERATION ═══
+   Same hint architecture as glosses (modern-Israeli translit, the layer
+   tanakh-reader.com shows). With BOTH layers on, translit sits directly
+   under the word and the gloss drops one rung further. */
+.tr-hint {
+  display:none;
+  font-family:var(--font-ui); font-size:0.36em; font-weight:400;
+  font-style:italic; letter-spacing:.2px; pointer-events:none; opacity:.9;
+  white-space:nowrap; line-height:1; color:var(--accent);
+  position:absolute; top:100%; left:50%; transform:translateX(-50%);
+  direction:ltr;
+}
+.L-translit .w { position:relative; }
+.L-translit .tr-hint { display:block; }
+.L-translit #verse-output { line-height:var(--line-h-gl); }
+.L-translit.L-gloss .gl-hint { top:calc(100% + 1.05em); }
+.L-translit.L-gloss #verse-output { line-height:var(--line-h-both); }
+
+/* Morpheme colouring inside the translit hint mirrors the Hebrew: each
+   piece lights up only when ITS layer is on (same toggles, same hues). */
+.L-translit.L-pfx .tr-hint .m-pfx { color:var(--m-pfx); }
+.L-translit.L-pfm .tr-hint .m-pfm { color:var(--m-pfm); }
+.L-translit.L-vbs .tr-hint .m-vbs { color:var(--m-vbs); }
+.L-translit.L-vbe .tr-hint .m-vbe { color:var(--m-vbe); }
+.L-translit.L-nme .tr-hint .m-nme { color:var(--m-nme); }
+.L-translit.L-uvf .tr-hint .m-uvf { color:var(--m-uvf); }
+.L-translit.L-prs .tr-hint .m-prs { color:var(--m-prs); }
 
 /* ═══ WORD-ANALYSIS PANEL ═══ */
 #panel {
@@ -439,6 +468,9 @@ details.lg-sec > .lg-row:last-child { padding-bottom:10px; }
     <div class="cat-wrap" id="binyanWrap">
       <button class="cat-tab" onclick="togBinyan()">Binyan</button>
     </div>
+    <div class="cat-wrap" id="translitWrap">
+      <button class="cat-tab" onclick="togTranslit()">Translit</button>
+    </div>
     <div class="cat-wrap" id="glossWrap">
       <button class="cat-tab" onclick="togGloss()">Glosses</button>
     </div>
@@ -526,7 +558,7 @@ details.lg-sec > .lg-row:last-child { padding-bottom:10px; }
 
 <script>
 // ═══ DATA — flat array of {v}|{br}|word records ═══
-const CH_DATA = [{"v": 1}, {"txt": "שִׁ֥יר", "segs": [{"t": "שִׁ֥יר", "m": "stm"}], "sp": "subs", "lem": "CJR/", "gl": "song", "gn": "m", "nu": "sg", "st": "c"}, {"txt": "הַֽ", "segs": [{"t": "הַֽ", "m": "stm"}], "sp": "art", "lem": "H", "gl": "the", "glue": true}, {"txt": "מַּֽעֲלֹ֗ות", "segs": [{"t": "מַּֽעֲל", "m": "stm"}, {"t": "ֹ֗ות", "m": "nme"}], "sp": "subs", "lem": "M<LH=/", "gl": "ascent", "gn": "f", "nu": "pl", "st": "a"}, {"br": true}, {"txt": "לְ", "segs": [{"t": "לְ", "m": "stm"}], "sp": "prep", "lem": "L", "gl": "to", "glue": true}, {"txt": "דָ֫וִ֥ד", "segs": [{"t": "דָ֫וִ֥ד", "m": "stm"}], "sp": "nmpr", "lem": "DWD==/", "gl": "David", "gn": "m", "nu": "sg", "st": "a"}, {"txt": "יְהוָ֤ה", "segs": [{"t": "יְהוָ֤ה", "m": "stm"}], "sp": "nmpr", "lem": "JHWH/", "gl": "YHWH", "gn": "m", "nu": "sg", "st": "a"}, {"br": true}, {"txt": "לֹא", "segs": [{"t": "לֹא", "m": "stm"}], "sp": "nega", "lem": "L>", "gl": "not", "maqaf": true}, {"txt": "גָבַ֣הּ", "segs": [{"t": "גָבַ֣הּ", "m": "stm"}], "sp": "verb", "lem": "GBH[", "gl": "be high", "vs": "qal", "vsd": "Qal", "vsc": "qal", "vt": "perf", "vtd": "perfect (qatal)", "ps": "p3", "gn": "m", "nu": "sg"}, {"txt": "לִ֭בִּי", "segs": [{"t": "לִ֭בּ", "m": "stm"}, {"t": "ִי", "m": "prs"}], "sp": "subs", "lem": "LB/", "gl": "heart", "gn": "m", "nu": "sg", "st": "a"}, {"br": true}, {"txt": "וְ", "segs": [{"t": "וְ", "m": "stm"}], "sp": "conj", "lem": "W", "gl": "and", "glue": true}, {"txt": "לֹא", "segs": [{"t": "לֹא", "m": "stm"}], "sp": "nega", "lem": "L>", "gl": "not", "maqaf": true}, {"txt": "רָמ֣וּ", "segs": [{"t": "רָמ֣", "m": "stm"}, {"t": "וּ", "m": "vbe"}], "sp": "verb", "lem": "RWM[", "gl": "be high", "vs": "qal", "vsd": "Qal", "vsc": "qal", "vt": "perf", "vtd": "perfect (qatal)", "ps": "p3", "nu": "pl"}, {"txt": "עֵינַ֑י", "segs": [{"t": "עֵינ", "m": "stm"}, {"t": "ַ֑י", "m": "nme"}], "sp": "subs", "lem": "<JN/", "gl": "eye", "gn": "f", "nu": "du", "st": "a"}, {"br": true}, {"txt": "וְ", "segs": [{"t": "וְ", "m": "stm"}], "sp": "conj", "lem": "W", "gl": "and", "glue": true}, {"txt": "לֹֽא", "segs": [{"t": "לֹֽא", "m": "stm"}], "sp": "nega", "lem": "L>", "gl": "not", "maqaf": true}, {"txt": "הִלַּ֓כְתִּי", "segs": [{"t": "הִלַּ֓כְ", "m": "stm"}, {"t": "תִּי", "m": "vbe"}], "sp": "verb", "lem": "HLK[", "gl": "walk", "vs": "piel", "vsd": "Piel", "vsc": "piel", "vt": "perf", "vtd": "perfect (qatal)", "ps": "p1", "nu": "sg"}, {"txt": "בִּ", "segs": [{"t": "בִּ", "m": "stm"}], "sp": "prep", "lem": "B", "gl": "in", "glue": true}, {"txt": "גְדֹלֹ֖ות", "segs": [{"t": "גְדֹל", "m": "stm"}, {"t": "ֹ֖ות", "m": "nme"}], "sp": "adjv", "lem": "GDWL/", "gl": "great", "gn": "f", "nu": "pl", "st": "a"}, {"txt": "וּ", "segs": [{"t": "וּ", "m": "stm"}], "sp": "conj", "lem": "W", "gl": "and", "glue": true}, {"txt": "בְ", "segs": [{"t": "בְ", "m": "stm"}], "sp": "prep", "lem": "B", "gl": "in", "glue": true}, {"txt": "נִפְלָאֹ֣ות", "segs": [{"t": "נִ", "m": "vbs"}, {"t": "פְלָא", "m": "stm"}, {"t": "ֹ֣ות", "m": "nme"}], "sp": "verb", "lem": "PL>[", "gl": "be miraculous", "vs": "nif", "vsd": "Nifal", "vsc": "nif", "vt": "ptca", "vtd": "participle (active)", "gn": "f", "nu": "pl", "st": "a"}, {"txt": "מִמֶּֽנִּי", "segs": [{"t": "מִמֶּֽנּ", "m": "stm"}, {"t": "ִי", "m": "prs"}], "sp": "prep", "lem": "MN", "gl": "from"}, {"v": 2}, {"txt": "אִם", "segs": [{"t": "אִם", "m": "stm"}], "sp": "conj", "lem": ">M", "gl": "if", "maqaf": true}, {"txt": "לֹ֤א", "segs": [{"t": "לֹ֤א", "m": "stm"}], "sp": "nega", "lem": "L>", "gl": "not"}, {"txt": "שִׁוִּ֨יתִי", "segs": [{"t": "שִׁוִּ֨י", "m": "stm"}, {"t": "תִי", "m": "vbe"}], "sp": "verb", "lem": "CWH[", "gl": "be like", "vs": "piel", "vsd": "Piel", "vsc": "piel", "vt": "perf", "vtd": "perfect (qatal)", "ps": "p1", "nu": "sg"}, {"br": true}, {"txt": "וְ", "segs": [{"t": "וְ", "m": "stm"}], "sp": "conj", "lem": "W", "gl": "and", "glue": true}, {"txt": "דֹומַ֗מְתִּי", "segs": [{"t": "דֹומַ֗מְ", "m": "stm"}, {"t": "תִּי", "m": "vbe"}], "sp": "verb", "lem": "DMM[", "gl": "rest", "vs": "piel", "vsd": "Piel", "vsc": "piel", "vt": "perf", "vtd": "perfect (qatal)", "ps": "p1", "nu": "sg"}, {"txt": "נַ֫פְשִׁ֥י", "segs": [{"t": "נַ֫פְשׁ", "m": "stm"}, {"t": "ִ֥י", "m": "prs"}], "sp": "subs", "lem": "NPC/", "gl": "soul", "gn": "f", "nu": "sg", "st": "a"}, {"txt": "כְּ֭", "segs": [{"t": "כְּ֭", "m": "stm"}], "sp": "prep", "lem": "K", "gl": "as", "glue": true}, {"txt": "גָמֻל", "segs": [{"t": "גָמֻל", "m": "stm"}], "sp": "verb", "lem": "GML[", "gl": "deal fully", "vs": "qal", "vsd": "Qal", "vsc": "qal", "vt": "ptcp", "vtd": "participle (passive)", "gn": "m", "nu": "sg", "st": "a"}, {"txt": "עֲלֵ֣י", "segs": [{"t": "עֲלֵ֣י", "m": "stm"}], "sp": "prep", "lem": "<L", "gl": "upon"}, {"txt": "אִמֹּ֑ו", "segs": [{"t": "אִמּ", "m": "stm"}, {"t": "ֹ֑ו", "m": "prs"}], "sp": "subs", "lem": ">M/", "gl": "mother", "gn": "f", "nu": "sg", "st": "a"}, {"br": true}, {"txt": "כַּ", "segs": [{"t": "כַּ", "m": "stm"}], "sp": "prep", "lem": "K", "gl": "as", "glue": true}, {"txt": "", "segs": [{"t": "", "m": "whole"}], "sp": "art", "lem": "H", "gl": "the", "glue": true}, {"txt": "גָּמֻ֖ל", "segs": [{"t": "גָּמֻ֖ל", "m": "stm"}], "sp": "verb", "lem": "GML[", "gl": "deal fully", "vs": "qal", "vsd": "Qal", "vsc": "qal", "vt": "ptcp", "vtd": "participle (passive)", "gn": "m", "nu": "sg", "st": "a"}, {"txt": "עָלַ֣י", "segs": [{"t": "עָלַ֣י", "m": "stm"}], "sp": "prep", "lem": "<L", "gl": "upon"}, {"txt": "נַפְשִֽׁי", "segs": [{"t": "נַפְשׁ", "m": "stm"}, {"t": "ִֽי", "m": "prs"}], "sp": "subs", "lem": "NPC/", "gl": "soul", "gn": "f", "nu": "sg", "st": "a"}, {"v": 3}, {"txt": "יַחֵ֣ל", "segs": [{"t": "יַחֵ֣ל", "m": "stm"}], "sp": "verb", "lem": "JXL[", "gl": "wait, to hope", "vs": "piel", "vsd": "Piel", "vsc": "piel", "vt": "impv", "vtd": "imperative", "ps": "p2", "gn": "m", "nu": "sg"}, {"txt": "יִ֝שְׂרָאֵל", "segs": [{"t": "יִ֝שְׂרָאֵל", "m": "stm"}], "sp": "nmpr", "lem": "JFR>L/", "gl": "Israel", "nu": "sg", "st": "a"}, {"br": true}, {"txt": "אֶל", "segs": [{"t": "אֶל", "m": "stm"}], "sp": "prep", "lem": ">L", "gl": "to", "maqaf": true}, {"txt": "יְהוָ֑ה", "segs": [{"t": "יְהוָ֑ה", "m": "stm"}], "sp": "nmpr", "lem": "JHWH/", "gl": "YHWH", "gn": "m", "nu": "sg", "st": "a"}, {"txt": "מֵֽ֝", "segs": [{"t": "מֵֽ֝", "m": "stm"}], "sp": "prep", "lem": "MN", "gl": "from", "glue": true}, {"txt": "עַתָּ֗ה", "segs": [{"t": "עַתָּ֗ה", "m": "stm"}], "sp": "advb", "lem": "<TH", "gl": "now"}, {"txt": "וְ", "segs": [{"t": "וְ", "m": "stm"}], "sp": "conj", "lem": "W", "gl": "and", "glue": true}, {"txt": "עַד", "segs": [{"t": "עַד", "m": "stm"}], "sp": "prep", "lem": "<D", "gl": "unto", "maqaf": true}, {"txt": "עֹולָֽם", "segs": [{"t": "עֹולָֽם", "m": "stm"}], "sp": "subs", "lem": "<WLM/", "gl": "eternity", "gn": "m", "nu": "sg", "st": "a"}];
+const CH_DATA = [{"v": 1}, {"txt": "שִׁ֥יר", "segs": [{"t": "שִׁ֥יר", "m": "stm"}], "sp": "subs", "lem": "CJR/", "gl": "song", "gn": "m", "nu": "sg", "st": "c", "tr": "shir"}, {"txt": "הַֽ", "segs": [{"t": "הַֽ", "m": "stm"}], "sp": "art", "lem": "H", "gl": "the", "glue": true}, {"txt": "מַּֽעֲלֹ֗ות", "segs": [{"t": "מַּֽעֲל", "m": "stm"}, {"t": "ֹ֗ות", "m": "nme"}], "sp": "subs", "lem": "M<LH=/", "gl": "ascent", "gn": "f", "nu": "pl", "st": "a", "tr": "hama'alot", "trs": [{"t": "ha", "m": "pfx"}, {"t": "ma'al", "m": "stm"}, {"t": "ot", "m": "nme"}]}, {"br": true}, {"txt": "לְ", "segs": [{"t": "לְ", "m": "stm"}], "sp": "prep", "lem": "L", "gl": "to", "glue": true}, {"txt": "דָ֫וִ֥ד", "segs": [{"t": "דָ֫וִ֥ד", "m": "stm"}], "sp": "nmpr", "lem": "DWD==/", "gl": "David", "gn": "m", "nu": "sg", "st": "a", "tr": "Ledavid", "trs": [{"t": "Le", "m": "pfx"}, {"t": "david", "m": "stm"}]}, {"txt": "יְהוָ֤ה", "segs": [{"t": "יְהוָ֤ה", "m": "stm"}], "sp": "nmpr", "lem": "JHWH/", "gl": "YHWH", "gn": "m", "nu": "sg", "st": "a", "tr": "Yahweh"}, {"br": true}, {"txt": "לֹא", "segs": [{"t": "לֹא", "m": "stm"}], "sp": "nega", "lem": "L>", "gl": "not", "maqaf": true, "tr": "lo"}, {"txt": "גָבַ֣הּ", "segs": [{"t": "גָבַ֣הּ", "m": "stm"}], "sp": "verb", "lem": "GBH[", "gl": "be high", "vs": "qal", "vsd": "Qal", "vsc": "qal", "vt": "perf", "vtd": "perfect (qatal)", "ps": "p3", "gn": "m", "nu": "sg", "tr": "gavah"}, {"txt": "לִ֭בִּי", "segs": [{"t": "לִ֭בּ", "m": "stm"}, {"t": "ִי", "m": "prs"}], "sp": "subs", "lem": "LB/", "gl": "heart", "gn": "m", "nu": "sg", "st": "a", "tr": "libi", "trs": [{"t": "lib", "m": "stm"}, {"t": "i", "m": "prs"}]}, {"br": true}, {"txt": "וְ", "segs": [{"t": "וְ", "m": "stm"}], "sp": "conj", "lem": "W", "gl": "and", "glue": true}, {"txt": "לֹא", "segs": [{"t": "לֹא", "m": "stm"}], "sp": "nega", "lem": "L>", "gl": "not", "maqaf": true, "tr": "velo", "trs": [{"t": "ve", "m": "pfx"}, {"t": "lo", "m": "stm"}]}, {"txt": "רָמ֣וּ", "segs": [{"t": "רָמ֣", "m": "stm"}, {"t": "וּ", "m": "vbe"}], "sp": "verb", "lem": "RWM[", "gl": "be high", "vs": "qal", "vsd": "Qal", "vsc": "qal", "vt": "perf", "vtd": "perfect (qatal)", "ps": "p3", "nu": "pl", "tr": "ramu", "trs": [{"t": "ram", "m": "stm"}, {"t": "u", "m": "vbe"}]}, {"txt": "עֵינַ֑י", "segs": [{"t": "עֵינ", "m": "stm"}, {"t": "ַ֑י", "m": "nme"}], "sp": "subs", "lem": "<JN/", "gl": "eye", "gn": "f", "nu": "du", "st": "a", "tr": "einai", "trs": [{"t": "ein", "m": "stm"}, {"t": "ai", "m": "nme"}]}, {"br": true}, {"txt": "וְ", "segs": [{"t": "וְ", "m": "stm"}], "sp": "conj", "lem": "W", "gl": "and", "glue": true}, {"txt": "לֹֽא", "segs": [{"t": "לֹֽא", "m": "stm"}], "sp": "nega", "lem": "L>", "gl": "not", "maqaf": true, "tr": "velo", "trs": [{"t": "ve", "m": "pfx"}, {"t": "lo", "m": "stm"}]}, {"txt": "הִלַּ֓כְתִּי", "segs": [{"t": "הִלַּ֓כְ", "m": "stm"}, {"t": "תִּי", "m": "vbe"}], "sp": "verb", "lem": "HLK[", "gl": "walk", "vs": "piel", "vsd": "Piel", "vsc": "piel", "vt": "perf", "vtd": "perfect (qatal)", "ps": "p1", "nu": "sg", "tr": "hilakhti", "trs": [{"t": "hilakh", "m": "stm"}, {"t": "ti", "m": "vbe"}]}, {"txt": "בִּ", "segs": [{"t": "בִּ", "m": "stm"}], "sp": "prep", "lem": "B", "gl": "in", "glue": true}, {"txt": "גְדֹלֹ֖ות", "segs": [{"t": "גְדֹל", "m": "stm"}, {"t": "ֹ֖ות", "m": "nme"}], "sp": "adjv", "lem": "GDWL/", "gl": "great", "gn": "f", "nu": "pl", "st": "a", "tr": "bigdolot", "trs": [{"t": "bi", "m": "pfx"}, {"t": "gdol", "m": "stm"}, {"t": "ot", "m": "nme"}]}, {"txt": "וּ", "segs": [{"t": "וּ", "m": "stm"}], "sp": "conj", "lem": "W", "gl": "and", "glue": true}, {"txt": "בְ", "segs": [{"t": "בְ", "m": "stm"}], "sp": "prep", "lem": "B", "gl": "in", "glue": true}, {"txt": "נִפְלָאֹ֣ות", "segs": [{"t": "נִ", "m": "vbs"}, {"t": "פְלָא", "m": "stm"}, {"t": "ֹ֣ות", "m": "nme"}], "sp": "verb", "lem": "PL>[", "gl": "be miraculous", "vs": "nif", "vsd": "Nifal", "vsc": "nif", "vt": "ptca", "vtd": "participle (active)", "gn": "f", "nu": "pl", "st": "a", "tr": "uvenifla'ot", "trs": [{"t": "u", "m": "pfx"}, {"t": "ve", "m": "pfx"}, {"t": "ni", "m": "vbs"}, {"t": "fla'", "m": "stm"}, {"t": "ot", "m": "nme"}]}, {"txt": "מִמֶּֽנִּי", "segs": [{"t": "מִמֶּֽנּ", "m": "stm"}, {"t": "ִי", "m": "prs"}], "sp": "prep", "lem": "MN", "gl": "from", "tr": "mimeni", "trs": [{"t": "mimen", "m": "stm"}, {"t": "i", "m": "prs"}]}, {"v": 2}, {"txt": "אִם", "segs": [{"t": "אִם", "m": "stm"}], "sp": "conj", "lem": ">M", "gl": "if", "maqaf": true, "tr": "im"}, {"txt": "לֹ֤א", "segs": [{"t": "לֹ֤א", "m": "stm"}], "sp": "nega", "lem": "L>", "gl": "not", "tr": "lo"}, {"txt": "שִׁוִּ֨יתִי", "segs": [{"t": "שִׁוִּ֨י", "m": "stm"}, {"t": "תִי", "m": "vbe"}], "sp": "verb", "lem": "CWH[", "gl": "be like", "vs": "piel", "vsd": "Piel", "vsc": "piel", "vt": "perf", "vtd": "perfect (qatal)", "ps": "p1", "nu": "sg", "tr": "shiviti", "trs": [{"t": "shivi", "m": "stm"}, {"t": "ti", "m": "vbe"}]}, {"br": true}, {"txt": "וְ", "segs": [{"t": "וְ", "m": "stm"}], "sp": "conj", "lem": "W", "gl": "and", "glue": true}, {"txt": "דֹומַ֗מְתִּי", "segs": [{"t": "דֹומַ֗מְ", "m": "stm"}, {"t": "תִּי", "m": "vbe"}], "sp": "verb", "lem": "DMM[", "gl": "rest", "vs": "piel", "vsd": "Piel", "vsc": "piel", "vt": "perf", "vtd": "perfect (qatal)", "ps": "p1", "nu": "sg", "tr": "vedomamti", "trs": [{"t": "ve", "m": "pfx"}, {"t": "domam", "m": "stm"}, {"t": "ti", "m": "vbe"}]}, {"txt": "נַ֫פְשִׁ֥י", "segs": [{"t": "נַ֫פְשׁ", "m": "stm"}, {"t": "ִ֥י", "m": "prs"}], "sp": "subs", "lem": "NPC/", "gl": "soul", "gn": "f", "nu": "sg", "st": "a", "tr": "nafshi", "trs": [{"t": "nafsh", "m": "stm"}, {"t": "i", "m": "prs"}]}, {"txt": "כְּ֭", "segs": [{"t": "כְּ֭", "m": "stm"}], "sp": "prep", "lem": "K", "gl": "as", "glue": true}, {"txt": "גָמֻל", "segs": [{"t": "גָמֻל", "m": "stm"}], "sp": "verb", "lem": "GML[", "gl": "deal fully", "vs": "qal", "vsd": "Qal", "vsc": "qal", "vt": "ptcp", "vtd": "participle (passive)", "gn": "m", "nu": "sg", "st": "a", "tr": "kegamul", "trs": [{"t": "ke", "m": "pfx"}, {"t": "gamul", "m": "stm"}]}, {"txt": "עֲלֵ֣י", "segs": [{"t": "עֲלֵ֣י", "m": "stm"}], "sp": "prep", "lem": "<L", "gl": "upon", "tr": "alei"}, {"txt": "אִמֹּ֑ו", "segs": [{"t": "אִמּ", "m": "stm"}, {"t": "ֹ֑ו", "m": "prs"}], "sp": "subs", "lem": ">M/", "gl": "mother", "gn": "f", "nu": "sg", "st": "a", "tr": "imo", "trs": [{"t": "im", "m": "stm"}, {"t": "o", "m": "prs"}]}, {"br": true}, {"txt": "כַּ", "segs": [{"t": "כַּ", "m": "stm"}], "sp": "prep", "lem": "K", "gl": "as", "glue": true}, {"txt": "", "segs": [{"t": "", "m": "whole"}], "sp": "art", "lem": "H", "gl": "the", "glue": true}, {"txt": "גָּמֻ֖ל", "segs": [{"t": "גָּמֻ֖ל", "m": "stm"}], "sp": "verb", "lem": "GML[", "gl": "deal fully", "vs": "qal", "vsd": "Qal", "vsc": "qal", "vt": "ptcp", "vtd": "participle (passive)", "gn": "m", "nu": "sg", "st": "a", "tr": "kagamul", "trs": [{"t": "ka", "m": "pfx"}, {"t": "gamul", "m": "stm"}]}, {"txt": "עָלַ֣י", "segs": [{"t": "עָלַ֣י", "m": "stm"}], "sp": "prep", "lem": "<L", "gl": "upon", "tr": "alai"}, {"txt": "נַפְשִֽׁי", "segs": [{"t": "נַפְשׁ", "m": "stm"}, {"t": "ִֽי", "m": "prs"}], "sp": "subs", "lem": "NPC/", "gl": "soul", "gn": "f", "nu": "sg", "st": "a", "tr": "nafshi", "trs": [{"t": "nafsh", "m": "stm"}, {"t": "i", "m": "prs"}]}, {"v": 3}, {"txt": "יַחֵ֣ל", "segs": [{"t": "יַחֵ֣ל", "m": "stm"}], "sp": "verb", "lem": "JXL[", "gl": "wait, to hope", "vs": "piel", "vsd": "Piel", "vsc": "piel", "vt": "impv", "vtd": "imperative", "ps": "p2", "gn": "m", "nu": "sg", "tr": "yachel"}, {"txt": "יִ֝שְׂרָאֵל", "segs": [{"t": "יִ֝שְׂרָאֵל", "m": "stm"}], "sp": "nmpr", "lem": "JFR>L/", "gl": "Israel", "nu": "sg", "st": "a", "tr": "Yisra'el"}, {"br": true}, {"txt": "אֶל", "segs": [{"t": "אֶל", "m": "stm"}], "sp": "prep", "lem": ">L", "gl": "to", "maqaf": true, "tr": "el"}, {"txt": "יְהוָ֑ה", "segs": [{"t": "יְהוָ֑ה", "m": "stm"}], "sp": "nmpr", "lem": "JHWH/", "gl": "YHWH", "gn": "m", "nu": "sg", "st": "a", "tr": "Yahweh"}, {"txt": "מֵֽ֝", "segs": [{"t": "מֵֽ֝", "m": "stm"}], "sp": "prep", "lem": "MN", "gl": "from", "glue": true}, {"txt": "עַתָּ֗ה", "segs": [{"t": "עַתָּ֗ה", "m": "stm"}], "sp": "advb", "lem": "<TH", "gl": "now", "tr": "me'atah", "trs": [{"t": "me", "m": "pfx"}, {"t": "'atah", "m": "stm"}]}, {"txt": "וְ", "segs": [{"t": "וְ", "m": "stm"}], "sp": "conj", "lem": "W", "gl": "and", "glue": true}, {"txt": "עַד", "segs": [{"t": "עַד", "m": "stm"}], "sp": "prep", "lem": "<D", "gl": "unto", "maqaf": true, "tr": "ve'ad", "trs": [{"t": "ve", "m": "pfx"}, {"t": "'ad", "m": "stm"}]}, {"txt": "עֹולָֽם", "segs": [{"t": "עֹולָֽם", "m": "stm"}], "sp": "subs", "lem": "<WLM/", "gl": "eternity", "gn": "m", "nu": "sg", "st": "a", "tr": "olam"}];
 const SENSE_LINES = true;
 
 // ═══ NAV DATA — location picker ═══
@@ -540,7 +572,7 @@ const TOTAL_CHAPTERS = parseInt('150', 10);
 
 // ═══ LAYER DEFINITIONS ═══
 const MORPH_LAYERS = ['pfx','pfm','vbs','vbe','nme','uvf','prs'];
-const OTHER_LAYERS = ['binyan','gloss'];
+const OTHER_LAYERS = ['binyan','translit','gloss'];
 const ALL_LAYERS = [...MORPH_LAYERS, ...OTHER_LAYERS];
 
 // Binyan code -> CSS colour-class suffix (matches src/books.py BINYANIM 'color').
@@ -615,6 +647,7 @@ function updateUI() {
   document.querySelector('#morphWrap .cat-tab').classList.toggle('has-active', morphActive);
   document.querySelector('#binyanWrap .cat-tab').classList.toggle('has-active', S.layers.has('binyan'));
   document.querySelector('#glossWrap .cat-tab').classList.toggle('has-active', S.layers.has('gloss'));
+  document.querySelector('#translitWrap .cat-tab').classList.toggle('has-active', S.layers.has('translit'));
   const bareBtns = document.querySelectorAll('.tab-bare');
   bareBtns[0].classList.toggle('active', S.layers.size === 0);
   const allOn = ALL_LAYERS.every(l => S.layers.has(l));
@@ -630,6 +663,7 @@ function updateUI() {
 function togL(l) { if (S.layers.has(l)) S.layers.delete(l); else S.layers.add(l); updateUI(); }
 function togBinyan() { togL('binyan'); }
 function togGloss() { togL('gloss'); }
+function togTranslit() { togL('translit'); }
 function togNiqqud() {
   S.niqqud = !S.niqqud;
   if (!S.niqqud) S.taamim = false;   // can't show accents without points
@@ -744,7 +778,18 @@ function render() {
     let glHint = '';
     if (head.gl) glHint = `<span class="gl-hint">${esc(head.gl)}</span>`;
 
-    h += `<span class="${wCls}" onclick="showPanel(${ui})">${inner}${glHint}</span>`;
+    // Translit hint — morpheme-coloured pieces when the aligner verified
+    // a split (trs), plain text otherwise (tr).
+    let trHint = '';
+    if (head.trs) {
+      trHint = '<span class="tr-hint">' +
+        head.trs.map(p => `<span class="m-${p.m}">${esc(p.t)}</span>`).join('') +
+        '</span>';
+    } else if (head.tr) {
+      trHint = `<span class="tr-hint">${esc(head.tr)}</span>`;
+    }
+
+    h += `<span class="${wCls}" onclick="showPanel(${ui})">${inner}${trHint}${glHint}</span>`;
 
     // maqaf joins this unit to the next with ־ (no surrounding space on the
     // maqaf side); a normal space otherwise.

@@ -51,6 +51,7 @@
   --heb-size: 34px;
   --line-h: 2.15;
   --line-h-gl: 2.5;
+  --line-h-both: 3.1;   /* translit + gloss hints stacked */
   --wrap-indent: 1.5em;
   --verse-gap: 10px;
   --tr: 150ms ease;
@@ -206,6 +207,34 @@ body { background:var(--bg-deep); color:var(--text-primary); font-family:var(--f
 .L-gloss .w { position:relative; }
 .L-gloss .gl-hint { display:block; }
 .L-gloss #verse-output { line-height:var(--line-h-gl); }
+
+/* ═══ TRANSLITERATION ═══
+   Same hint architecture as glosses (modern-Israeli translit, the layer
+   tanakh-reader.com shows). With BOTH layers on, translit sits directly
+   under the word and the gloss drops one rung further. */
+.tr-hint {
+  display:none;
+  font-family:var(--font-ui); font-size:0.36em; font-weight:400;
+  font-style:italic; letter-spacing:.2px; pointer-events:none; opacity:.9;
+  white-space:nowrap; line-height:1; color:var(--accent);
+  position:absolute; top:100%; left:50%; transform:translateX(-50%);
+  direction:ltr;
+}
+.L-translit .w { position:relative; }
+.L-translit .tr-hint { display:block; }
+.L-translit #verse-output { line-height:var(--line-h-gl); }
+.L-translit.L-gloss .gl-hint { top:calc(100% + 1.05em); }
+.L-translit.L-gloss #verse-output { line-height:var(--line-h-both); }
+
+/* Morpheme colouring inside the translit hint mirrors the Hebrew: each
+   piece lights up only when ITS layer is on (same toggles, same hues). */
+.L-translit.L-pfx .tr-hint .m-pfx { color:var(--m-pfx); }
+.L-translit.L-pfm .tr-hint .m-pfm { color:var(--m-pfm); }
+.L-translit.L-vbs .tr-hint .m-vbs { color:var(--m-vbs); }
+.L-translit.L-vbe .tr-hint .m-vbe { color:var(--m-vbe); }
+.L-translit.L-nme .tr-hint .m-nme { color:var(--m-nme); }
+.L-translit.L-uvf .tr-hint .m-uvf { color:var(--m-uvf); }
+.L-translit.L-prs .tr-hint .m-prs { color:var(--m-prs); }
 
 /* ═══ WORD-ANALYSIS PANEL ═══ */
 #panel {
@@ -439,6 +468,9 @@ details.lg-sec > .lg-row:last-child { padding-bottom:10px; }
     <div class="cat-wrap" id="binyanWrap">
       <button class="cat-tab" onclick="togBinyan()">Binyan</button>
     </div>
+    <div class="cat-wrap" id="translitWrap">
+      <button class="cat-tab" onclick="togTranslit()">Translit</button>
+    </div>
     <div class="cat-wrap" id="glossWrap">
       <button class="cat-tab" onclick="togGloss()">Glosses</button>
     </div>
@@ -540,7 +572,7 @@ const TOTAL_CHAPTERS = parseInt('{{TOTAL_CHAPTERS}}', 10);
 
 // ═══ LAYER DEFINITIONS ═══
 const MORPH_LAYERS = ['pfx','pfm','vbs','vbe','nme','uvf','prs'];
-const OTHER_LAYERS = ['binyan','gloss'];
+const OTHER_LAYERS = ['binyan','translit','gloss'];
 const ALL_LAYERS = [...MORPH_LAYERS, ...OTHER_LAYERS];
 
 // Binyan code -> CSS colour-class suffix (matches src/books.py BINYANIM 'color').
@@ -615,6 +647,7 @@ function updateUI() {
   document.querySelector('#morphWrap .cat-tab').classList.toggle('has-active', morphActive);
   document.querySelector('#binyanWrap .cat-tab').classList.toggle('has-active', S.layers.has('binyan'));
   document.querySelector('#glossWrap .cat-tab').classList.toggle('has-active', S.layers.has('gloss'));
+  document.querySelector('#translitWrap .cat-tab').classList.toggle('has-active', S.layers.has('translit'));
   const bareBtns = document.querySelectorAll('.tab-bare');
   bareBtns[0].classList.toggle('active', S.layers.size === 0);
   const allOn = ALL_LAYERS.every(l => S.layers.has(l));
@@ -630,6 +663,7 @@ function updateUI() {
 function togL(l) { if (S.layers.has(l)) S.layers.delete(l); else S.layers.add(l); updateUI(); }
 function togBinyan() { togL('binyan'); }
 function togGloss() { togL('gloss'); }
+function togTranslit() { togL('translit'); }
 function togNiqqud() {
   S.niqqud = !S.niqqud;
   if (!S.niqqud) S.taamim = false;   // can't show accents without points
@@ -744,7 +778,18 @@ function render() {
     let glHint = '';
     if (head.gl) glHint = `<span class="gl-hint">${esc(head.gl)}</span>`;
 
-    h += `<span class="${wCls}" onclick="showPanel(${ui})">${inner}${glHint}</span>`;
+    // Translit hint — morpheme-coloured pieces when the aligner verified
+    // a split (trs), plain text otherwise (tr).
+    let trHint = '';
+    if (head.trs) {
+      trHint = '<span class="tr-hint">' +
+        head.trs.map(p => `<span class="m-${p.m}">${esc(p.t)}</span>`).join('') +
+        '</span>';
+    } else if (head.tr) {
+      trHint = `<span class="tr-hint">${esc(head.tr)}</span>`;
+    }
+
+    h += `<span class="${wCls}" onclick="showPanel(${ui})">${inner}${trHint}${glHint}</span>`;
 
     // maqaf joins this unit to the next with ־ (no surrounding space on the
     // maqaf side); a normal space otherwise.

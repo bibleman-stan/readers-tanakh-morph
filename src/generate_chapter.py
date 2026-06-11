@@ -48,6 +48,14 @@ SENSE_LINES_DIR = os.environ.get(
     'SENSE_LINES_DIR',
     'C:/Users/bibleman/repos/readers-tanakh/data/text-files/v2/heb',
 )
+# Transliteration (modern-Israeli style, TAHOT-derived) — the SAME layer
+# tanakh-reader.com displays, consumed read-only for cross-site consistency.
+# One ` | `-separated unit per printed Hebrew word; maqaf-joined words are
+# separate units. Lives beside the sense-lines in readers-tanakh.
+TRANSLIT_DIR = os.environ.get(
+    'TRANSLIT_DIR',
+    'C:/Users/bibleman/repos/readers-tanakh/data/text-files/v2/translit',
+)
 
 # Morpheme slots in BHSA surface order, with the (feature, css-class) pairs.
 # css classes: pfx is reserved for prefix-particle word-slots (handled at
@@ -298,6 +306,199 @@ def _matchform(s):
     return ''.join(c for c in s if c not in '־׃׀' and not c.isspace())
 
 
+def load_translit(book_code, chapter):
+    """Load per-verse transliteration units for a chapter.
+
+    Returns {verse_num: [unit, ...]} with units flattened across the
+    file's sense-lines (alignment to Hebrew is by unit COUNT per verse,
+    one unit per printed word / maqaf segment), or None when absent.
+    """
+    entry = BOOKS.get(book_code)
+    if not entry or not os.path.isdir(TRANSLIT_DIR):
+        return None
+    sc = entry['sense_code']
+    dir_name = None
+    for d in os.listdir(TRANSLIT_DIR):
+        parts = d.split('-', 1)
+        if len(parts) == 2 and parts[1] == sc:
+            dir_name = d
+            break
+    if not dir_name:
+        return None
+    path = os.path.join(TRANSLIT_DIR, dir_name, f'{sc}-{chapter:02d}.txt')
+    if not os.path.exists(path):
+        return None
+    verses = {}
+    cur = None
+    with open(path, encoding='utf-8') as f:
+        for raw in f:
+            line = raw.strip()
+            if not line:
+                continue
+            m = re.match(r'^(\d+):(\d+)$', line)
+            if m:
+                cur = int(m.group(2))
+                verses[cur] = []
+                continue
+            if cur is None:
+                continue
+            verses[cur].extend(u.strip() for u in line.split('|') if u.strip())
+    return verses
+
+
+# Hebrew consonant -> plausible translit realizations (modern-Israeli style,
+# matching readers-tanakh's clean_translit output). Order longest-first per
+# letter; '' = silent (alef/ayin/final he, mater yod/vav).
+_TRANSLIT_CONS = {
+    'א': ("'", ''), 'ב': ('v', 'b'), 'ג': ('g',), 'ד': ('d',),
+    'ה': ('h', ''), 'ו': ('v', 'w', 'u', 'o', ''), 'ז': ('z',),
+    'ח': ('ch', 'kh', 'h'), 'ט': ('t',), 'י': ('y', 'i', ''),
+    'כ': ('kh', 'ch', 'k'), 'ך': ('kh', 'ch', 'k'), 'ל': ('l',),
+    'מ': ('m',), 'ם': ('m',), 'נ': ('n',), 'ן': ('n',), 'ס': ('s',),
+    'ע': ("'", ''), 'פ': ('f', 'p'), 'ף': ('f', 'p'),
+    'צ': ('tz', 'ts'), 'ץ': ('tz', 'ts'), 'ק': ('k',), 'ר': ('r',),
+    'ש': ('sh', 's'), 'ת': ('t',),
+}
+_TR_VOWELS = set("aeiou")
+
+
+def split_translit(unit_segs, tr):
+    """Split one translit word-string at Hebrew morpheme boundaries.
+
+    unit_segs: flattened [(css_class, consonant_string), ...] across the
+    visual unit's records (prefix-particle records pre-classed 'pfx').
+    Returns [{'t': piece, 'm': cls}, ...] whose concatenation == tr
+    exactly, or None when the consonant-skeleton walk fails to verify.
+    Vowels/apostrophes attach to the segment of the consonant they follow.
+    Doubling (dagesh forte across a boundary, e.g. vai+yomer) is handled
+    by letting a consonant consume a doubled realization.
+    """
+    tr_l = tr.lower()
+    cons_seq = []           # (seg_index, consonant)
+    for si, (_cls, cons) in enumerate(unit_segs):
+        for c in cons:
+            if c in _TRANSLIT_CONS:
+                cons_seq.append((si, c))
+
+    n = len(tr_l)
+
+    # DP over (consonant index, translit position) -> parent for backtrack
+    from functools import lru_cache
+    sys.setrecursionlimit(10000)
+    memo = {}
+
+    def walk(ci, pos):
+        """Return list of (ci, start, end) matches or None."""
+        key = (ci, pos)
+        if key in memo:
+            return memo[key]
+        # consume leading vowels/apostrophes — they attach to PREVIOUS seg
+        if ci == len(cons_seq):
+            rest = tr_l[pos:]
+            result = [] if all(ch in _TR_VOWELS or ch == "'" or ch == '-' for ch in rest) else None
+            memo[key] = result
+            return result
+        # vowels before this consonant belong to the previous consonant's seg
+        p = pos
+        while p < n and (tr_l[p] in _TR_VOWELS or tr_l[p] == '-'):
+            p += 1
+        _si, c = cons_seq[ci]
+        for var in _TRANSLIT_CONS[c]:
+            # doubled realization (dagesh forte): e.g. 'yy', 'mm'
+            for cand in ((var + var) if var else None, var):
+                if cand is None:
+                    continue
+                end = p + len(cand)
+                if cand == '' or tr_l[p:end] == cand:
+                    rest = walk(ci + 1, end if cand else p)
+                    if rest is not None:
+                        # Silent match (mater lectionis): the vowel run we
+                        # skipped REALIZES this consonant (ים = 'im'), so
+                        # anchor it at the pre-vowel position.
+                        anchor = pos if cand == '' else p
+                        result = [(ci, anchor, end if cand else anchor)] + rest
+                        memo[key] = result
+                        return result
+        # silent-consonant fallback at current pos without consuming vowels
+        memo[key] = None
+        return None
+
+    matches = walk(0, 0)
+    if matches is None:
+        return None
+
+    # Boundary positions: a new segment begins at the first consumed char of
+    # its first consonant (vowels between belong to the previous segment).
+    seg_start = {}   # seg_index -> earliest translit pos
+    for (ci, start, _end) in matches:
+        si = cons_seq[ci][0]
+        if si not in seg_start:
+            seg_start[si] = start
+    # Segments with no consonants (pure-vowel morphemes) inherit boundaries
+    cut_points = []
+    prev = 0
+    pieces = []
+    seg_indices = sorted(seg_start)
+    for k, si in enumerate(seg_indices):
+        start = seg_start[si] if k > 0 else 0
+        if k > 0:
+            cut_points.append(start)
+    cuts = [0] + cut_points + [n]
+    # Build pieces per contributing segment, in order
+    out = []
+    for k, si in enumerate(seg_indices):
+        piece = tr[cuts[k]:cuts[k + 1]]
+        if not piece:
+            continue
+        out.append({'t': piece, 'm': unit_segs[si][0]})
+    if ''.join(p['t'] for p in out) != tr:
+        return None
+    if len(out) < 2:
+        return None   # nothing to colour — plain tr suffices
+    return out
+
+
+def attach_translit(recs, translit_units):
+    """Attach a `tr` field to the head record of each visual word unit.
+
+    A visual unit = a run of glue:true records plus the terminating
+    record (mirrors the template's buildUnits). Maqaf-terminated records
+    end their unit (translit files give maqaf segments their own unit).
+    Attaches ONLY when unit count matches exactly — a count mismatch
+    (ketiv/qere divergence verses, compound-name slots) skips the verse
+    so misaligned translit can never ship. Returns True if attached.
+    """
+    units = []   # list of head-record indices
+    run_start = None
+    for i, (rec, _cons) in enumerate(recs):
+        if run_start is None:
+            run_start = i
+        if not rec.get('glue'):
+            units.append(i)   # head = terminating record of the run
+            run_start = None
+    if run_start is not None:
+        units.append(len(recs) - 1)
+    if len(units) != len(translit_units):
+        return False
+    run_start = 0
+    for head_idx, tr in zip(units, translit_units):
+        recs[head_idx][0]['tr'] = tr
+        # Morpheme-coloured split: flatten this unit's segs (prefix-particle
+        # records class as pfx at word level, mirroring the renderer).
+        unit_segs = []
+        for j in range(run_start, head_idx + 1):
+            rec = recs[j][0]
+            is_pfx = rec.get('glue') and rec.get('sp') in ('prep', 'art', 'conj')
+            for seg in rec.get('segs', []):
+                cls = 'pfx' if is_pfx else seg.get('m', 'whole')
+                unit_segs.append((cls, consonants_only(seg['t'])))
+        trs = split_translit(unit_segs, tr)
+        if trs:
+            recs[head_idx][0]['trs'] = trs
+        run_start = head_idx + 1
+    return True
+
+
 def assign_lines(verse_words, sense_lines):
     """Assign each word record (+ its surface consonants) to a sense-line.
 
@@ -367,7 +568,10 @@ def generate_chapter(book_code, chapter):
     verse = 1
     data = []
     sense = load_sense_lines(book_code, chapter)
+    translit = load_translit(book_code, chapter)
     n_lines_used = 0
+    n_tr_attached = 0
+    n_tr_skipped = 0
     while True:
         vnode = T.nodeFromSection((entry['bhsa'], chapter, verse))
         if vnode is None:
@@ -384,6 +588,11 @@ def generate_chapter(book_code, chapter):
         if sense and verse in sense:
             line_breaks = set(assign_lines(recs, sense[verse]))
             n_lines_used += len(sense[verse])
+        if translit and verse in translit:
+            if attach_translit(recs, translit[verse]):
+                n_tr_attached += 1
+            else:
+                n_tr_skipped += 1
         for i, (rec, _cons) in enumerate(recs):
             if i in line_breaks:
                 data.append({'br': True})
@@ -396,6 +605,9 @@ def generate_chapter(book_code, chapter):
         'display': entry['display'],
         'chapter': chapter,
         'sense_lines': bool(sense),
+        'translit': bool(translit),
+        'tr_attached': n_tr_attached,
+        'tr_skipped': n_tr_skipped,
         'data': data,
     }
 
