@@ -208,6 +208,51 @@ body { background:var(--bg-deep); color:var(--text-primary); font-family:var(--f
 .L-gloss .gl-hint { display:block; }
 .L-gloss #verse-output { line-height:var(--line-h-gl); }
 
+/* ═══ VERB-FORM FILLS (word-level conjugation scanning) ═══
+   Mirrors Stan's Logos visual-filter logic: solid background fill =
+   conjugation class, so every wayyiqtol / perfect / imperfect in the
+   chapter is scannable at a glance. Fill is a low-alpha tint so the
+   morpheme text-colours stay readable on top. Underline stays binyan's
+   channel (same separation as the Logos filters). */
+.L-vforms .w { border-radius:5px; }
+.L-vforms .w.t-wayq { background:rgba(102,187,106,.17); }
+.L-vforms .w.t-perf { background:rgba(245,158,11,.15); }
+.L-vforms .w.t-impf { background:rgba(96,165,250,.16); }
+.L-vforms .w.t-impv { background:rgba(239,83,80,.18); }
+.L-vforms .w.t-ptca, .L-vforms .w.t-ptcp { background:rgba(192,132,252,.16); }
+.L-vforms .w.t-infc, .L-vforms .w.t-infa { background:rgba(160,160,170,.16); }
+
+/* ═══ CONSTRUCT-STATE MARKER (noun chains) ═══
+   Dashed underline on construct-state words: a construct chain reads as
+   a dashed run ending at the absolute. Distinct channel from binyan's
+   solid underline and the verb-form fills. */
+.L-cstr .w.cstr { border-bottom:2px dashed rgba(124,175,194,.75); padding-bottom:1px; }
+
+/* ═══ NOUN GENDER (box outline, per Stan's BWH filter palette) ═══
+   Feminine = pink box, masculine = blue box (nouns/adjectives only;
+   verb agreement gender stays in the tap panel). Combined with the
+   Construct layer this reproduces the BWH gender x state matrix:
+   box colour = gender, dashed underline = construct. */
+.L-gender .w.gn-f { outline:1px solid rgba(240,110,169,.55); outline-offset:2px; border-radius:3px; }
+.L-gender .w.gn-m { outline:1px solid rgba(96,165,250,.5);  outline-offset:2px; border-radius:3px; }
+
+/* ═══ TRANSLIT-ONLY MODE (Hebrew text hidden) ═══
+   Mirrors tanakh-reader.com's script toggle: with Hebrew off, the
+   transliteration becomes the text itself — static flow, LTR reading
+   order, larger type; morpheme colours carry over. Maqaf renders as a
+   hyphen. The aleph toolbar button toggles; translit is forced on. */
+.no-hebrew #verse-output { direction:ltr; text-align:left; line-height:2.2; }
+.no-hebrew .w .s { display:none; }
+.no-hebrew .tr-hint {
+  display:inline-block; position:static; transform:none;
+  font-size:.52em; font-style:normal; line-height:1.3; opacity:1;
+}
+.no-hebrew .v-num { float:left; }
+.no-hebrew .maqaf { font-size:0; }
+.no-hebrew .maqaf::after { content:'-'; font-size:16px; color:var(--text-dim); }
+.no-hebrew.L-gloss .gl-hint { top:calc(100% - .4em); }
+.no-hebrew #verse-output .sense-line { padding-right:0; padding-left:2em; text-indent:-2em; }
+
 /* ═══ TRANSLITERATION ═══
    Same hint architecture as glosses (modern-Israeli translit, the layer
    tanakh-reader.com shows). With BOTH layers on, translit sits directly
@@ -468,6 +513,15 @@ details.lg-sec > .lg-row:last-child { padding-bottom:10px; }
     <div class="cat-wrap" id="binyanWrap">
       <button class="cat-tab" onclick="togBinyan()">Binyan</button>
     </div>
+    <div class="cat-wrap" id="vformsWrap">
+      <button class="cat-tab" onclick="togVForms()" title="Background fill by conjugation: wayyiqtol green, perfect amber, imperfect blue, imperative red, participle purple, infinitive gray">Verb forms</button>
+    </div>
+    <div class="cat-wrap" id="cstrWrap">
+      <button class="cat-tab" onclick="togCstr()" title="Dashed underline on construct-state words — construct chains read as a dashed run ending at the absolute">Construct</button>
+    </div>
+    <div class="cat-wrap" id="genderWrap">
+      <button class="cat-tab" onclick="togGender()" title="Box outline on nouns/adjectives by gender: feminine pink, masculine blue">Gender</button>
+    </div>
     <div class="cat-wrap" id="translitWrap">
       <button class="cat-tab" onclick="togTranslit()">Translit</button>
     </div>
@@ -476,6 +530,7 @@ details.lg-sec > .lg-row:last-child { padding-bottom:10px; }
     </div>
 
     <div class="tb-sep"></div>
+    <button class="icon-btn" onclick="togHebrew()" id="hebrewBtn" title="Hebrew text (off = transliteration-only mode)">&#x05D0;</button>
     <button class="icon-btn" onclick="togNiqqud()" id="niqqudBtn" title="Niqqud (vowel points)">&#x05B0;</button>
     <button class="icon-btn" onclick="togTaamim()" id="taamimBtn" title="Te'amim (cantillation)">&#x0599;</button>
 
@@ -526,6 +581,19 @@ details.lg-sec > .lg-row:last-child { padding-bottom:10px; }
       <div class="lg-row"><span class="lg-sw" style="background:rgba(216,212,204,.4)"></span><span class="lg-name">Core / stem</span><span class="lg-desc">the lexeme root — left at text colour</span></div>
     </details>
     <details class="lg-sec">
+      <summary>Word-level layers</summary>
+      <div class="lg-row"><span class="lg-desc" style="min-width:0">Word-level scanning layers (background fill = conjugation; dashed underline = construct; box = gender) — independent channels that stack with the morpheme colours.</span></div>
+      <div class="lg-row"><span class="lg-sw" style="background:rgba(102,187,106,.45)"></span><span class="lg-name">Wayyiqtol</span><span class="lg-desc">Verb forms fill — narrative preterite</span></div>
+      <div class="lg-row"><span class="lg-sw" style="background:rgba(245,158,11,.4)"></span><span class="lg-name">Perfect</span><span class="lg-desc">Verb forms fill — qatal</span></div>
+      <div class="lg-row"><span class="lg-sw" style="background:rgba(96,165,250,.45)"></span><span class="lg-name">Imperfect</span><span class="lg-desc">Verb forms fill — yiqtol</span></div>
+      <div class="lg-row"><span class="lg-sw" style="background:rgba(239,83,80,.45)"></span><span class="lg-name">Imperative</span><span class="lg-desc">Verb forms fill</span></div>
+      <div class="lg-row"><span class="lg-sw" style="background:rgba(192,132,252,.45)"></span><span class="lg-name">Participle</span><span class="lg-desc">Verb forms fill — active or passive</span></div>
+      <div class="lg-row"><span class="lg-sw" style="background:rgba(160,160,170,.45)"></span><span class="lg-name">Infinitive</span><span class="lg-desc">Verb forms fill — construct or absolute</span></div>
+      <div class="lg-row"><span class="lg-sw" style="background:none;border-bottom:2px dashed rgba(124,175,194,.9)"></span><span class="lg-name">Construct</span><span class="lg-desc">dashed underline — a chain reads as a dashed run ending at the absolute</span></div>
+      <div class="lg-row"><span class="lg-sw" style="background:none;outline:1px solid rgba(240,110,169,.8)"></span><span class="lg-name">Feminine</span><span class="lg-desc">Gender box (nouns/adjectives)</span></div>
+      <div class="lg-row"><span class="lg-sw" style="background:none;outline:1px solid rgba(96,165,250,.8)"></span><span class="lg-name">Masculine</span><span class="lg-desc">Gender box (nouns/adjectives)</span></div>
+    </details>
+    <details class="lg-sec">
       <summary>Binyan (verbal stem)</summary>
       <div class="lg-row"><span class="lg-sw" style="background:var(--b-qal)"></span><span class="lg-name">Qal / Peal</span></div>
       <div class="lg-row"><span class="lg-sw" style="background:var(--b-nif)"></span><span class="lg-name">Nifal</span></div>
@@ -572,7 +640,7 @@ const TOTAL_CHAPTERS = parseInt('22', 10);
 
 // ═══ LAYER DEFINITIONS ═══
 const MORPH_LAYERS = ['pfx','pfm','vbs','vbe','nme','uvf','prs'];
-const OTHER_LAYERS = ['binyan','translit','gloss'];
+const OTHER_LAYERS = ['binyan','vforms','cstr','gender','translit','gloss'];
 const ALL_LAYERS = [...MORPH_LAYERS, ...OTHER_LAYERS];
 
 // Binyan code -> CSS colour-class suffix (matches src/books.py BINYANIM 'color').
@@ -609,7 +677,7 @@ function shape(t) {
   return s;
 }
 
-const S = { fontSize:34, layers:new Set(), niqqud:true, taamim:false, units:[] };
+const S = { fontSize:34, layers:new Set(), niqqud:true, taamim:false, hebrew:true, units:[] };
 
 // ═══ PREFERENCE PERSISTENCE ═══
 const PREF_KEY = 'tanakh-morph-reader-prefs';
@@ -622,6 +690,8 @@ function loadPrefs() {
     else S.layers.add('binyan');
     if (typeof p.niqqud === 'boolean') S.niqqud = p.niqqud;
     if (typeof p.taamim === 'boolean') S.taamim = p.taamim;
+    if (typeof p.hebrew === 'boolean') S.hebrew = p.hebrew;
+    if (!S.hebrew && !S.layers.has('translit')) S.hebrew = true;  // never both off
     if (typeof p.fontSize === 'number' && p.fontSize >= 18 && p.fontSize <= 72) {
       S.fontSize = p.fontSize;
       const el = document.getElementById('verse-output');
@@ -632,7 +702,7 @@ function loadPrefs() {
 function savePrefs() {
   try {
     localStorage.setItem(PREF_KEY, JSON.stringify({
-      layers:[...S.layers], niqqud:S.niqqud, taamim:S.taamim, fontSize:S.fontSize,
+      layers:[...S.layers], niqqud:S.niqqud, taamim:S.taamim, hebrew:S.hebrew, fontSize:S.fontSize,
     }));
   } catch (e) {}
 }
@@ -648,6 +718,11 @@ function updateUI() {
   document.querySelector('#binyanWrap .cat-tab').classList.toggle('has-active', S.layers.has('binyan'));
   document.querySelector('#glossWrap .cat-tab').classList.toggle('has-active', S.layers.has('gloss'));
   document.querySelector('#translitWrap .cat-tab').classList.toggle('has-active', S.layers.has('translit'));
+  document.querySelector('#vformsWrap .cat-tab').classList.toggle('has-active', S.layers.has('vforms'));
+  document.querySelector('#cstrWrap .cat-tab').classList.toggle('has-active', S.layers.has('cstr'));
+  document.querySelector('#genderWrap .cat-tab').classList.toggle('has-active', S.layers.has('gender'));
+  r.classList.toggle('no-hebrew', !S.hebrew);
+  document.getElementById('hebrewBtn').style.opacity = S.hebrew ? '1' : '.35';
   const bareBtns = document.querySelectorAll('.tab-bare');
   bareBtns[0].classList.toggle('active', S.layers.size === 0);
   const allOn = ALL_LAYERS.every(l => S.layers.has(l));
@@ -663,7 +738,21 @@ function updateUI() {
 function togL(l) { if (S.layers.has(l)) S.layers.delete(l); else S.layers.add(l); updateUI(); }
 function togBinyan() { togL('binyan'); }
 function togGloss() { togL('gloss'); }
-function togTranslit() { togL('translit'); }
+function togTranslit() {
+  togL('translit');
+  // Hebrew-off mode needs translit; turning translit off restores Hebrew.
+  if (!S.layers.has('translit') && !S.hebrew) { S.hebrew = true; updateUI(); }
+}
+function togVForms() { togL('vforms'); }
+function togCstr() { togL('cstr'); }
+function togGender() { togL('gender'); }
+function togHebrew() {
+  S.hebrew = !S.hebrew;
+  // Translit-only mode: hiding Hebrew forces the translit layer on so the
+  // page can never go blank (mirrors the niqqud/taamim implication guard).
+  if (!S.hebrew) S.layers.add('translit');
+  updateUI();
+}
 function togNiqqud() {
   S.niqqud = !S.niqqud;
   if (!S.niqqud) S.taamim = false;   // can't show accents without points
@@ -770,6 +859,9 @@ function render() {
     const sp = head.sp;
     if (['prep','conj','art','nega','intj'].includes(sp)) wCls += ' ptcl';
     if (head.sp === 'verb' && head.vsc && BINYAN_CLS[head.vsc]) wCls += ' b-' + BINYAN_CLS[head.vsc];
+    if (head.sp === 'verb' && head.vt) wCls += ' t-' + head.vt;
+    if (head.st === 'c') wCls += ' cstr';
+    if (head.sp !== 'verb' && head.gn) wCls += ' gn-' + head.gn;
     if (u.recs.some(r => r.arc)) wCls += ' arc';
 
     let inner = u.recs.map(renderSegs).join('');
