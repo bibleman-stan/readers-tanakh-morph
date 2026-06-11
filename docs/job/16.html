@@ -169,6 +169,10 @@ body { background:var(--bg-deep); color:var(--text-primary); font-family:var(--f
      inline-block re-applies it to its own first line, shoving every
      word's content out of its box */
   text-indent:0;
+  /* tight internal line box: outlines/fills hug the glyphs instead of
+     inheriting the verse's tall line height (which made gender boxes
+     collide across lines) */
+  line-height:1.3;
 }
 .w:hover { background:rgba(255,255,255,.05); }
 .w.ptcl { opacity:.72; }
@@ -240,8 +244,8 @@ body { background:var(--bg-deep); color:var(--text-primary); font-family:var(--f
    verb agreement gender stays in the tap panel). Combined with the
    Construct layer this reproduces the BWH gender x state matrix:
    box colour = gender, dashed underline = construct. */
-.L-gender .w.gn-f { outline:1px solid rgba(240,110,169,.55); outline-offset:2px; border-radius:3px; }
-.L-gender .w.gn-m { outline:1px solid rgba(96,165,250,.5);  outline-offset:2px; border-radius:3px; }
+.L-gender .w.gn-f { outline:1px solid rgba(240,110,169,.55); outline-offset:0; border-radius:3px; }
+.L-gender .w.gn-m { outline:1px solid rgba(96,165,250,.5);  outline-offset:0; border-radius:3px; }
 
 /* ═══ TRANSLIT-ONLY MODE (Hebrew text hidden) ═══
    Mirrors tanakh-reader.com's script toggle: with Hebrew off, the
