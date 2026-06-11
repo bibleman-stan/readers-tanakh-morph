@@ -75,6 +75,37 @@ MORPH_SLOTS = [
 PREFIX_POS = {'prep', 'art', 'conj'}
 
 _api = None
+_lexgen = None
+
+
+def lexical_gender():
+    """Per-lexeme gender by corpus majority vote.
+
+    BHSA's `gn` is MORPHOLOGICAL: unmarked feminines (erets, yom-class
+    counterexamples aside — nefesh, yad, ir...) sit at gn=unknown for
+    most occurrences (12,304 substantive tokens corpus-wide). Lexical
+    gender is what the Gender layer should show (Stan 2026-06-11; his
+    BWH filters are lexical). Majority vote over the occurrences BHSA
+    does mark, requiring >80% agreement, resolves 78% of the unknowns
+    (sanity: >RY/->f, JWM/->m, NPC/->f, JD/->f).
+    """
+    global _lexgen
+    if _lexgen is None:
+        import collections
+        api = tf_api()
+        F = api.F
+        votes = collections.defaultdict(collections.Counter)
+        for w in F.otype.s('word'):
+            if F.sp.v(w) == 'subs' and F.gn.v(w) in ('m', 'f'):
+                votes[F.lex.v(w)][F.gn.v(w)] += 1
+        _lexgen = {}
+        for lx, c in votes.items():
+            tot = c['m'] + c['f']
+            if c['f'] / tot > 0.8:
+                _lexgen[lx] = 'f'
+            elif c['m'] / tot > 0.8:
+                _lexgen[lx] = 'm'
+    return _lexgen
 
 
 def tf_api():
@@ -239,6 +270,13 @@ def word_record(api, w):
         val = getattr(F, feat).v(w)
         if val and val not in ('NA', 'unknown'):
             rec[feat] = val
+    # Lexical-gender fallback for morphologically unmarked substantives
+    # (erets-class): BHSA gn=unknown, but the lexeme's gender is known
+    # by corpus majority. See lexical_gender().
+    if 'gn' not in rec and sp == 'subs':
+        lg = lexical_gender().get(rec.get('lem', ''))
+        if lg:
+            rec['gn'] = lg
 
     if F.language.v(w) == 'Aramaic':
         rec['arc'] = True
