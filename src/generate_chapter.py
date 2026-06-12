@@ -547,11 +547,12 @@ def attach_translit(recs, translit_units):
         # Morpheme-coloured split: flatten this unit's segs (prefix-particle
         # records class as pfx at word level, mirroring the renderer).
         unit_segs = []
+        _pfx_cls = {'conj': 'pfxc', 'art': 'pfxa', 'prep': 'pfxp'}
         for j in range(run_start, head_idx + 1):
             rec = recs[j][0]
             is_pfx = rec.get('glue') and rec.get('sp') in ('prep', 'art', 'conj')
             for seg in rec.get('segs', []):
-                cls = 'pfx' if is_pfx else seg.get('m', 'whole')
+                cls = _pfx_cls[rec['sp']] if is_pfx else seg.get('m', 'whole')
                 unit_segs.append((cls, consonants_only(seg['t'])))
         trs = split_translit(unit_segs, tr)
         if trs:

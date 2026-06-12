@@ -31,10 +31,17 @@
   --m-pfm:  #ef5350;   /* preformative (imperfect/wayyiqtol)   — warm: red    */
   --m-vbs:  #f59e0b;   /* verbal-stem affix (hif ה, nif נ…)    — warm: orange */
   --m-vbe:  #eecf6d;   /* verbal ending (person/gender/number) — warm: amber  */
-  --m-nme:  #60a5fa;   /* nominal ending                       — cool: blue   */
+  /* Blue and pink are RESERVED for the gender layer (Stan 2026-06-12):
+     morpheme text colours stay out of both hue families. */
+  --m-nme:  #a78bfa;   /* nominal ending                       — cool: violet */
   --m-uvf:  #4dd0e1;   /* univalent final (directional he…)    — cool: cyan   */
-  --m-pfx:  #66bb6a;   /* prefix particle (glued prep/art/conj) — green       */
-  --m-prs:  #f06ea9;   /* pronominal suffix                     — pink        */
+  /* Prefix particles split by FUNCTION (clause-connection vs definiteness
+     vs case-role — three different reading skills, per Stan's Logos
+     filters), one toggle, three hues in the green-teal band: */
+  --m-pfxc: #66bb6a;   /* vav conjunction ("and")               — green       */
+  --m-pfxa: #2dd4bf;   /* the article ה ("the")                 — teal        */
+  --m-pfxp: #a3b573;   /* prepositions ב/ל/כ/מ                  — sage        */
+  --m-prs:  #e060c8;   /* pronominal suffix                     — fuchsia     */
 
   /* ── Binyan ICONIC LINE GRAMMAR (Stan's system, 2026-06-12) ──
      The mark mimics the morphology: line POSITION = voice (below=active,
@@ -141,7 +148,7 @@ body { background:var(--bg-deep); color:var(--text-primary); font-family:var(--f
 .aramaic-notice {
   max-width:42em; margin:0 auto 18px; padding:8px 14px;
   background:rgba(94,234,212,.08); border:1px solid rgba(94,234,212,.25);
-  border-radius:8px; color:var(--m-pfx); font-size:13px; font-family:var(--font-ui);
+  border-radius:8px; color:var(--m-pfxa); font-size:13px; font-family:var(--font-ui);
   text-align:center; display:none;
 }
 .aramaic-notice.show { display:block; }
@@ -189,7 +196,9 @@ body { background:var(--bg-deep); color:var(--text-primary); font-family:var(--f
 /* ═══ MORPHEME COLOUR LAYERS ═══
  * Each .s segment carries an m-<class>. The L-<class> wrapper on #reader
  * turns its colour on. stm has no layer — it is the resting text colour. */
-.L-pfx  .s.m-pfx { color:var(--m-pfx); }
+.L-pfx  .s.m-pfxc { color:var(--m-pfxc); }
+.L-pfx  .s.m-pfxa { color:var(--m-pfxa); }
+.L-pfx  .s.m-pfxp { color:var(--m-pfxp); }
 .L-pfm  .s.m-pfm { color:var(--m-pfm); font-weight:600; }
 .L-vbs  .s.m-vbs { color:var(--m-vbs); font-weight:600; }
 .L-vbe  .s.m-vbe { color:var(--m-vbe); }
@@ -224,7 +233,7 @@ body { background:var(--bg-deep); color:var(--text-primary); font-family:var(--f
 .w.arc::after {
   content:'\05D0\05E8'; /* אר */
   font-family:var(--font-ui); font-size:0.32em; vertical-align:super;
-  color:var(--m-pfx); opacity:.7; margin-right:1px; pointer-events:none;
+  color:var(--m-pfxc); opacity:.7; margin-right:1px; pointer-events:none;
 }
 
 /* ═══ GLOSSES ═══ */
@@ -325,7 +334,9 @@ body { background:var(--bg-deep); color:var(--text-primary); font-family:var(--f
 
 /* Morpheme colouring inside the translit hint mirrors the Hebrew: each
    piece lights up only when ITS layer is on (same toggles, same hues). */
-.L-translit.L-pfx .tr-hint .m-pfx { color:var(--m-pfx); }
+.L-translit.L-pfx .tr-hint .m-pfxc { color:var(--m-pfxc); }
+.L-translit.L-pfx .tr-hint .m-pfxa { color:var(--m-pfxa); }
+.L-translit.L-pfx .tr-hint .m-pfxp { color:var(--m-pfxp); }
 .L-translit.L-pfm .tr-hint .m-pfm { color:var(--m-pfm); }
 .L-translit.L-vbs .tr-hint .m-vbs { color:var(--m-vbs); }
 .L-translit.L-vbe .tr-hint .m-vbe { color:var(--m-vbe); }
@@ -363,7 +374,9 @@ body { background:var(--bg-deep); color:var(--text-primary); font-family:var(--f
 .mb { display:flex; flex-wrap:wrap; gap:4px 6px; margin:6px 0; direction:rtl; }
 .mb-piece { font-size:14px; padding:2px 7px; border-radius:3px; font-family:var(--font-heb); display:flex; align-items:baseline; gap:5px; }
 .mb-piece small { font-family:var(--font-ui); font-size:9px; color:var(--text-dim); direction:ltr; }
-.mb-pfx  { color:var(--m-pfx); background:rgba(94,234,212,.10); }
+.mb-pfxc { color:var(--m-pfxc); background:rgba(102,187,106,.10); }
+.mb-pfxa { color:var(--m-pfxa); background:rgba(45,212,191,.10); }
+.mb-pfxp { color:var(--m-pfxp); background:rgba(163,181,115,.10); }
 .mb-pfm  { color:var(--m-pfm); background:rgba(248,113,113,.10); }
 .mb-vbs  { color:var(--m-vbs); background:rgba(251,191,36,.10); }
 .mb-stm  { color:var(--text-primary); background:rgba(255,255,255,.05); }
@@ -551,9 +564,9 @@ details.lg-sec > .lg-row:last-child { padding-bottom:10px; }
           <span class="cd-swatch" style="background:var(--m-uvf)"></span>
         </div>
         <div class="cd-group">Attached elements</div>
-        <div class="cd-item" data-l="pfx" onclick="togL('pfx')" style="--ac:var(--m-pfx)">
+        <div class="cd-item" data-l="pfx" onclick="togL('pfx')" style="--ac:var(--m-pfxc)">
           <span class="cd-box"></span><span class="cd-name">Prefix particles</span>
-          <span class="cd-swatch" style="background:var(--m-pfx)"></span>
+          <span class="cd-swatch" style="background:var(--m-pfxc)"></span><span class="cd-swatch" style="background:var(--m-pfxa)"></span><span class="cd-swatch" style="background:var(--m-pfxp)"></span>
         </div>
         <div class="cd-item" data-l="prs" onclick="togL('prs')" style="--ac:var(--m-prs)">
           <span class="cd-box"></span><span class="cd-name">Pronominal suffix</span>
@@ -638,7 +651,9 @@ details.lg-sec > .lg-row:last-child { padding-bottom:10px; }
       <div class="lg-row"><span class="lg-sw" style="background:var(--m-vbe)"></span><span class="lg-name">Verbal ending</span><span class="lg-desc">verb — person/gender/number (קָטַלְתָּ)</span></div>
       <div class="lg-row"><span class="lg-sw" style="background:var(--m-nme)"></span><span class="lg-name">Nominal ending</span><span class="lg-desc">noun — ִים, ֹות, ֵי</span></div>
       <div class="lg-row"><span class="lg-sw" style="background:var(--m-uvf)"></span><span class="lg-name">Univalent final</span><span class="lg-desc">noun — directional he (אַרְצָה), paragogic</span></div>
-      <div class="lg-row"><span class="lg-sw" style="background:var(--m-pfx)"></span><span class="lg-name">Prefix particle</span><span class="lg-desc">glued ו / ב / ל / כ / ה-article</span></div>
+      <div class="lg-row"><span class="lg-sw" style="background:var(--m-pfxc)"></span><span class="lg-name">Vav conjunction</span><span class="lg-desc">glued ו — clause connection</span></div>
+      <div class="lg-row"><span class="lg-sw" style="background:var(--m-pfxa)"></span><span class="lg-name">Article</span><span class="lg-desc">glued ה — definiteness</span></div>
+      <div class="lg-row"><span class="lg-sw" style="background:var(--m-pfxp)"></span><span class="lg-name">Preposition</span><span class="lg-desc">glued ב / ל / כ / מ — case role</span></div>
       <div class="lg-row"><span class="lg-sw" style="background:var(--m-prs)"></span><span class="lg-name">Pronominal suffix</span><span class="lg-desc">attached pronoun (אֶחָיו)</span></div>
       <div class="lg-row"><span class="lg-sw" style="background:rgba(216,212,204,.4)"></span><span class="lg-name">Core / stem</span><span class="lg-desc">the lexeme root — left at text colour</span></div>
     </details>
@@ -694,7 +709,7 @@ details.lg-sec > .lg-row:last-child { padding-bottom:10px; }
 
 <script>
 // ═══ DATA — flat array of {v}|{br}|word records ═══
-const CH_DATA = [{"v": 1}, {"txt": "הַֽלְל֣וּ", "segs": [{"t": "הַֽלְל֣", "m": "stm"}, {"t": "וּ", "m": "vbe"}], "sp": "verb", "lem": "HLL[", "gl": "praise", "fq": 146, "vs": "piel", "vsd": "Piel", "vsc": "piel", "vt": "impv", "vtd": "imperative", "ps": "p2", "gn": "m", "nu": "pl", "tr": "halu"}, {"txt": "אֶת", "segs": [{"t": "אֶת", "m": "stm"}], "sp": "prep", "lem": ">T", "gl": "<object marker>", "fq": 10987, "maqaf": true, "tr": "et"}, {"txt": "יְ֭הוָה", "segs": [{"t": "יְ֭הוָה", "m": "stm"}], "sp": "nmpr", "lem": "JHWH/", "gl": "YHWH", "fq": 6828, "gn": "m", "nu": "sg", "st": "a", "tr": "Yahweh"}, {"txt": "כָּל", "segs": [{"t": "כָּל", "m": "stm"}], "sp": "subs", "lem": "KL/", "gl": "whole", "fq": 5412, "gn": "m", "nu": "sg", "st": "c", "maqaf": true, "tr": "kol"}, {"txt": "גֹּויִ֑ם", "segs": [{"t": "גֹּוי", "m": "stm"}, {"t": "ִ֑ם", "m": "nme"}], "sp": "subs", "lem": "GWJ/", "gl": "people", "fq": 555, "gn": "m", "nu": "pl", "st": "a", "tr": "goyim", "trs": [{"t": "goyi", "m": "stm"}, {"t": "m", "m": "nme"}]}, {"br": true}, {"txt": "שַׁ֝בְּח֗וּהוּ", "segs": [{"t": "שַׁ֝בְּח֗", "m": "stm"}, {"t": "וּ", "m": "vbe"}, {"t": "הוּ", "m": "prs"}], "sp": "verb", "lem": "CBX[", "gl": "praise", "fq": 8, "vs": "piel", "vsd": "Piel", "vsc": "piel", "vt": "impv", "vtd": "imperative", "ps": "p2", "gn": "m", "nu": "pl", "tr": "shabchuhu", "trs": [{"t": "shabch", "m": "stm"}, {"t": "u", "m": "vbe"}, {"t": "hu", "m": "prs"}]}, {"txt": "כָּל", "segs": [{"t": "כָּל", "m": "stm"}], "sp": "subs", "lem": "KL/", "gl": "whole", "fq": 5412, "gn": "m", "nu": "sg", "st": "c", "maqaf": true, "tr": "kol"}, {"txt": "הָ", "segs": [{"t": "הָ", "m": "stm"}], "sp": "art", "lem": "H", "gl": "the", "fq": 30386, "glue": true}, {"txt": "אֻמִּֽים", "segs": [{"t": "אֻמּ", "m": "stm"}, {"t": "ִֽים", "m": "nme"}], "sp": "subs", "lem": ">MH==/", "gl": "clan", "fq": 7, "gn": "f", "nu": "pl", "st": "a", "tr": "ha'umim", "trs": [{"t": "ha", "m": "pfx"}, {"t": "'um", "m": "stm"}, {"t": "im", "m": "nme"}]}, {"v": 2}, {"txt": "כִּ֥י", "segs": [{"t": "כִּ֥י", "m": "stm"}], "sp": "conj", "lem": "KJ", "gl": "that", "fq": 4483, "tr": "ki"}, {"txt": "גָ֘בַ֤ר", "segs": [{"t": "גָ֘בַ֤ר", "m": "stm"}], "sp": "verb", "lem": "GBR[", "gl": "be superior", "fq": 25, "vs": "qal", "vsd": "Qal", "vsc": "qal", "vt": "perf", "vtd": "perfect (qatal)", "ps": "p3", "gn": "m", "nu": "sg", "tr": "gavar"}, {"txt": "עָלֵ֨ינוּ", "segs": [{"t": "עָלֵ֨י", "m": "stm"}, {"t": "נוּ", "m": "prs"}], "sp": "prep", "lem": "<L", "gl": "upon", "fq": 5766, "tr": "aleinu", "trs": [{"t": "alei", "m": "stm"}, {"t": "nu", "m": "prs"}]}, {"txt": "חַסְדֹּ֗ו", "segs": [{"t": "חַסְדּ", "m": "stm"}, {"t": "ֹ֗ו", "m": "prs"}], "sp": "subs", "lem": "XSD/", "gl": "loyalty", "fq": 245, "gn": "m", "nu": "sg", "st": "a", "tr": "chasdo", "trs": [{"t": "chasd", "m": "stm"}, {"t": "o", "m": "prs"}]}, {"br": true}, {"txt": "וֶֽ", "segs": [{"t": "וֶֽ", "m": "stm"}], "sp": "conj", "lem": "W", "gl": "and", "fq": 50272, "glue": true}, {"txt": "אֱמֶת", "segs": [{"t": "אֱמ", "m": "stm"}, {"t": "ֶת", "m": "nme"}], "sp": "subs", "lem": ">MT/", "gl": "trustworthiness", "fq": 127, "gn": "f", "nu": "sg", "st": "c", "maqaf": true, "tr": "ve'emet", "trs": [{"t": "ve", "m": "pfx"}, {"t": "'eme", "m": "stm"}, {"t": "t", "m": "nme"}]}, {"txt": "יְהוָ֥ה", "segs": [{"t": "יְהוָ֥ה", "m": "stm"}], "sp": "nmpr", "lem": "JHWH/", "gl": "YHWH", "fq": 6828, "gn": "m", "nu": "sg", "st": "a", "tr": "Yahweh"}, {"txt": "לְ", "segs": [{"t": "לְ", "m": "stm"}], "sp": "prep", "lem": "L", "gl": "to", "fq": 20069, "glue": true}, {"txt": "עֹולָ֗ם", "segs": [{"t": "עֹולָ֗ם", "m": "stm"}], "sp": "subs", "lem": "<WLM/", "gl": "eternity", "fq": 438, "gn": "m", "nu": "sg", "st": "a", "tr": "le'olam", "trs": [{"t": "le", "m": "pfx"}, {"t": "'olam", "m": "stm"}]}, {"br": true}, {"txt": "הַֽלְלוּ", "segs": [{"t": "הַֽלְל", "m": "stm"}, {"t": "וּ", "m": "vbe"}], "sp": "verb", "lem": "HLL[", "gl": "praise", "fq": 146, "vs": "piel", "vsd": "Piel", "vsc": "piel", "vt": "impv", "vtd": "imperative", "ps": "p2", "gn": "m", "nu": "pl", "maqaf": true, "tr": "halu"}, {"txt": "יָֽהּ", "segs": [{"t": "יָֽהּ", "m": "stm"}], "sp": "nmpr", "lem": "JH/", "gl": "the Lord", "fq": 49, "gn": "m", "nu": "sg", "st": "a", "tr": "Yah"}];
+const CH_DATA = [{"v": 1}, {"txt": "הַֽלְל֣וּ", "segs": [{"t": "הַֽלְל֣", "m": "stm"}, {"t": "וּ", "m": "vbe"}], "sp": "verb", "lem": "HLL[", "gl": "praise", "fq": 146, "vs": "piel", "vsd": "Piel", "vsc": "piel", "vt": "impv", "vtd": "imperative", "ps": "p2", "gn": "m", "nu": "pl", "tr": "halu"}, {"txt": "אֶת", "segs": [{"t": "אֶת", "m": "stm"}], "sp": "prep", "lem": ">T", "gl": "<object marker>", "fq": 10987, "maqaf": true, "tr": "et"}, {"txt": "יְ֭הוָה", "segs": [{"t": "יְ֭הוָה", "m": "stm"}], "sp": "nmpr", "lem": "JHWH/", "gl": "YHWH", "fq": 6828, "gn": "m", "nu": "sg", "st": "a", "tr": "Yahweh"}, {"txt": "כָּל", "segs": [{"t": "כָּל", "m": "stm"}], "sp": "subs", "lem": "KL/", "gl": "whole", "fq": 5412, "gn": "m", "nu": "sg", "st": "c", "maqaf": true, "tr": "kol"}, {"txt": "גֹּויִ֑ם", "segs": [{"t": "גֹּוי", "m": "stm"}, {"t": "ִ֑ם", "m": "nme"}], "sp": "subs", "lem": "GWJ/", "gl": "people", "fq": 555, "gn": "m", "nu": "pl", "st": "a", "tr": "goyim", "trs": [{"t": "goyi", "m": "stm"}, {"t": "m", "m": "nme"}]}, {"br": true}, {"txt": "שַׁ֝בְּח֗וּהוּ", "segs": [{"t": "שַׁ֝בְּח֗", "m": "stm"}, {"t": "וּ", "m": "vbe"}, {"t": "הוּ", "m": "prs"}], "sp": "verb", "lem": "CBX[", "gl": "praise", "fq": 8, "vs": "piel", "vsd": "Piel", "vsc": "piel", "vt": "impv", "vtd": "imperative", "ps": "p2", "gn": "m", "nu": "pl", "tr": "shabchuhu", "trs": [{"t": "shabch", "m": "stm"}, {"t": "u", "m": "vbe"}, {"t": "hu", "m": "prs"}]}, {"txt": "כָּל", "segs": [{"t": "כָּל", "m": "stm"}], "sp": "subs", "lem": "KL/", "gl": "whole", "fq": 5412, "gn": "m", "nu": "sg", "st": "c", "maqaf": true, "tr": "kol"}, {"txt": "הָ", "segs": [{"t": "הָ", "m": "stm"}], "sp": "art", "lem": "H", "gl": "the", "fq": 30386, "glue": true}, {"txt": "אֻמִּֽים", "segs": [{"t": "אֻמּ", "m": "stm"}, {"t": "ִֽים", "m": "nme"}], "sp": "subs", "lem": ">MH==/", "gl": "clan", "fq": 7, "gn": "f", "nu": "pl", "st": "a", "tr": "ha'umim", "trs": [{"t": "ha", "m": "pfxa"}, {"t": "'um", "m": "stm"}, {"t": "im", "m": "nme"}]}, {"v": 2}, {"txt": "כִּ֥י", "segs": [{"t": "כִּ֥י", "m": "stm"}], "sp": "conj", "lem": "KJ", "gl": "that", "fq": 4483, "tr": "ki"}, {"txt": "גָ֘בַ֤ר", "segs": [{"t": "גָ֘בַ֤ר", "m": "stm"}], "sp": "verb", "lem": "GBR[", "gl": "be superior", "fq": 25, "vs": "qal", "vsd": "Qal", "vsc": "qal", "vt": "perf", "vtd": "perfect (qatal)", "ps": "p3", "gn": "m", "nu": "sg", "tr": "gavar"}, {"txt": "עָלֵ֨ינוּ", "segs": [{"t": "עָלֵ֨י", "m": "stm"}, {"t": "נוּ", "m": "prs"}], "sp": "prep", "lem": "<L", "gl": "upon", "fq": 5766, "tr": "aleinu", "trs": [{"t": "alei", "m": "stm"}, {"t": "nu", "m": "prs"}]}, {"txt": "חַסְדֹּ֗ו", "segs": [{"t": "חַסְדּ", "m": "stm"}, {"t": "ֹ֗ו", "m": "prs"}], "sp": "subs", "lem": "XSD/", "gl": "loyalty", "fq": 245, "gn": "m", "nu": "sg", "st": "a", "tr": "chasdo", "trs": [{"t": "chasd", "m": "stm"}, {"t": "o", "m": "prs"}]}, {"br": true}, {"txt": "וֶֽ", "segs": [{"t": "וֶֽ", "m": "stm"}], "sp": "conj", "lem": "W", "gl": "and", "fq": 50272, "glue": true}, {"txt": "אֱמֶת", "segs": [{"t": "אֱמ", "m": "stm"}, {"t": "ֶת", "m": "nme"}], "sp": "subs", "lem": ">MT/", "gl": "trustworthiness", "fq": 127, "gn": "f", "nu": "sg", "st": "c", "maqaf": true, "tr": "ve'emet", "trs": [{"t": "ve", "m": "pfxc"}, {"t": "'eme", "m": "stm"}, {"t": "t", "m": "nme"}]}, {"txt": "יְהוָ֥ה", "segs": [{"t": "יְהוָ֥ה", "m": "stm"}], "sp": "nmpr", "lem": "JHWH/", "gl": "YHWH", "fq": 6828, "gn": "m", "nu": "sg", "st": "a", "tr": "Yahweh"}, {"txt": "לְ", "segs": [{"t": "לְ", "m": "stm"}], "sp": "prep", "lem": "L", "gl": "to", "fq": 20069, "glue": true}, {"txt": "עֹולָ֗ם", "segs": [{"t": "עֹולָ֗ם", "m": "stm"}], "sp": "subs", "lem": "<WLM/", "gl": "eternity", "fq": 438, "gn": "m", "nu": "sg", "st": "a", "tr": "le'olam", "trs": [{"t": "le", "m": "pfxp"}, {"t": "'olam", "m": "stm"}]}, {"br": true}, {"txt": "הַֽלְלוּ", "segs": [{"t": "הַֽלְל", "m": "stm"}, {"t": "וּ", "m": "vbe"}], "sp": "verb", "lem": "HLL[", "gl": "praise", "fq": 146, "vs": "piel", "vsd": "Piel", "vsc": "piel", "vt": "impv", "vtd": "imperative", "ps": "p2", "gn": "m", "nu": "pl", "maqaf": true, "tr": "halu"}, {"txt": "יָֽהּ", "segs": [{"t": "יָֽהּ", "m": "stm"}], "sp": "nmpr", "lem": "JH/", "gl": "the Lord", "fq": 49, "gn": "m", "nu": "sg", "st": "a", "tr": "Yah"}];
 const SENSE_LINES = true;
 
 // ═══ NAV DATA — location picker ═══
@@ -730,8 +745,10 @@ const BINYAN_MARK = {
 };
 
 // Morpheme class -> grammar label for the panel.
+const PFX_CLS = { conj:'pfxc', art:'pfxa', prep:'pfxp' };
 const SEG_LABEL = {
-  pfx:'prefix particle', pfm:'preformative', vbs:'stem affix', stm:'core',
+  pfx:'prefix particle', pfxc:'conjunction', pfxa:'article', pfxp:'preposition',
+  pfm:'preformative', vbs:'stem affix', stm:'core',
   vbe:'verbal ending', nme:'nominal ending', uvf:'univalent final',
   prs:'pronominal suffix', whole:'whole word',
 };
@@ -923,8 +940,9 @@ function renderSegs(rec) {
   const isPrefixParticle = rec.glue && ['prep','art','conj'].includes(rec.sp);
   const segs = (rec.segs && rec.segs.length) ? rec.segs : [{ t:rec.txt||'', m:'whole' }];
   segs.forEach(seg => {
-    // Prefix particles get class pfx (word-level), regardless of seg class.
-    const cls = isPrefixParticle ? 'pfx' : (seg.m || 'whole');
+    // Prefix particles class by FUNCTION (word-level): vav conjunction /
+    // article / preposition — three reading skills, three hues, one toggle.
+    const cls = isPrefixParticle ? PFX_CLS[rec.sp] : (seg.m || 'whole');
     html += `<span class="s m-${cls}">${esc(shape(seg.t))}</span>`;
   });
   return html;
@@ -1057,7 +1075,7 @@ function showPanel(ui) {
     const isPfx = rec.glue && ['prep','art','conj'].includes(rec.sp);
     const segs = (rec.segs && rec.segs.length) ? rec.segs : [{ t:rec.txt||'', m:'whole' }];
     segs.forEach(seg => {
-      const m = isPfx ? 'pfx' : (seg.m || 'whole');
+      const m = isPfx ? PFX_CLS[rec.sp] : (seg.m || 'whole');
       const lbl = SEG_LABEL[m] || m;
       const t = esc(shape(seg.t) || '—');
       html += `<span class="mb-piece mb-${m}">${t} <small>${esc(lbl)}</small></span>`;
