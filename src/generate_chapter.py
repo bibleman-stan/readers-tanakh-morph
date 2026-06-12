@@ -94,16 +94,26 @@ def lexical_gender():
         import collections
         api = tf_api()
         F = api.F
+        # INFLECTING lexemes (numerals, ordinals, gentilics — BHSA ls
+        # feature) are excluded: their marked occurrences skew feminine
+        # because only the f-form is morphologically visible (echad: 271
+        # marked akhat-f vs 5 m), while the unmarked tokens are masculine
+        # — the vote would call them backwards (caught 2026-06-12 on
+        # Gen 1:5 echad wearing a pink box).
+        INFLECTING_LS = {'card', 'ordn', 'gntl'}
         votes = collections.defaultdict(collections.Counter)
         for w in F.otype.s('word'):
-            if F.sp.v(w) == 'subs' and F.gn.v(w) in ('m', 'f'):
+            if F.sp.v(w) == 'subs' and F.gn.v(w) in ('m', 'f') \
+                    and F.ls.v(w) not in INFLECTING_LS:
                 votes[F.lex.v(w)][F.gn.v(w)] += 1
         _lexgen = {}
         for lx, c in votes.items():
             tot = c['m'] + c['f']
-            if c['f'] / tot > 0.8:
+            # minority <=10% = morphological noise; otherwise the lexeme
+            # genuinely swings and we make no call
+            if c['f'] / tot >= 0.9:
                 _lexgen[lx] = 'f'
-            elif c['m'] / tot > 0.8:
+            elif c['m'] / tot >= 0.9:
                 _lexgen[lx] = 'm'
     return _lexgen
 
@@ -118,7 +128,7 @@ def tf_api():
             'g_word_utf8 trailer_utf8 '
             'g_pfm_utf8 g_vbs_utf8 g_lex_utf8 g_vbe_utf8 '
             'g_nme_utf8 g_prs_utf8 g_uvf_utf8 '
-            'vs vt sp ps gn nu st lex language gloss freq_lex '
+            'vs vt sp ps gn nu st lex ls language gloss freq_lex '
         )
         TF = Fabric(locations=BHSA_TF, silent=True)
         _api = TF.load(features, silent=True)
@@ -265,6 +275,14 @@ def word_record(api, w):
     if vt and vt != 'NA':
         rec['vt'] = vt
         rec['vtd'] = TENSES.get(vt, vt)
+        # Cohortative (detectable class): 1st-person imperfect with the
+        # paragogic-he ending in the verbal-ending morpheme. 523 corpus-wide.
+        # Apocopated jussives are NOT mechanically detectable from BHSA;
+        # al+yiqtol jussives are flagged contextually in generate_chapter().
+        if vt == 'impf' and F.ps.v(w) == 'p1':
+            vbe = (F.g_vbe_utf8.v(w) or '').replace(_BHSA_MARKER, '')
+            if 'ה' in vbe:
+                rec['vol'] = 'coh'
 
     for feat in ('ps', 'gn', 'nu', 'st'):
         val = getattr(F, feat).v(w)
@@ -627,6 +645,12 @@ def generate_chapter(book_code, chapter):
         for w in words:
             rec = word_record(api, w)
             recs.append((rec, consonants_only(rec['txt'])))
+        # Syntactically certain jussives: negative al + yiqtol (60 corpus-wide)
+        for i in range(1, len(recs)):
+            r = recs[i][0]
+            if r.get('vt') == 'impf' and 'vol' not in r \
+                    and recs[i - 1][0].get('lem') == '>L':
+                r['vol'] = 'jus'
         line_breaks = set()
         if sense and verse in sense:
             line_breaks = set(assign_lines(recs, sense[verse]))
