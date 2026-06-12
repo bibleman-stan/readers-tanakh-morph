@@ -30,18 +30,18 @@
      stm (core/stem) stays near text colour — it is the default. */
   --m-pfm:  #ef5350;   /* preformative (imperfect/wayyiqtol)   — warm: red    */
   --m-vbs:  #f59e0b;   /* verbal-stem affix (hif ה, nif נ…)    — warm: orange */
-  --m-vbe:  #eecf6d;   /* verbal ending (person/gender/number) — warm: amber  */
+  --m-vbe:  #ecd08c;   /* verbal ending (person/gender/number) — warm: amber  */
   /* Blue and pink are RESERVED for the gender layer (Stan 2026-06-12):
      morpheme text colours stay out of both hue families. */
   --m-nme:  #a78bfa;   /* nominal ending                       — cool: violet */
-  --m-uvf:  #4dd0e1;   /* univalent final (directional he…)    — cool: cyan   */
+  --m-uvf:  #009888;   /* univalent final (directional he…)    — cool: cyan   */
   /* Prefix particles split by FUNCTION (clause-connection vs definiteness
      vs case-role — three different reading skills, per Stan's Logos
      filters), one toggle, three hues in the green-teal band: */
-  --m-pfxc: #66bb6a;   /* vav conjunction ("and")               — green       */
-  --m-pfxa: #2dd4bf;   /* the article ה ("the")                 — teal        */
-  --m-pfxp: #a3b573;   /* prepositions ב/ל/כ/מ                  — sage        */
-  --m-prs:  #e060c8;   /* pronominal suffix                     — fuchsia     */
+  --m-pfxc: #ffffff;   /* vav conjunction ("and")               — green       */
+  --m-pfxa: #f8f200;   /* the article ה ("the")                 — teal        */
+  --m-pfxp: #00e5f9;   /* prepositions ב/ל/כ/מ                  — sage        */
+  --m-prs:  #28f388;   /* pronominal suffix                     — fuchsia     */
 
   /* ── Binyan ICONIC LINE GRAMMAR (Stan's system, 2026-06-12) ──
      The mark mimics the morphology: line POSITION = voice (below=active,
@@ -148,7 +148,7 @@ body { background:var(--bg-deep); color:var(--text-primary); font-family:var(--f
 .aramaic-notice {
   max-width:42em; margin:0 auto 18px; padding:8px 14px;
   background:rgba(94,234,212,.08); border:1px solid rgba(94,234,212,.25);
-  border-radius:8px; color:var(--m-pfxa); font-size:13px; font-family:var(--font-ui);
+  border-radius:8px; color:var(--accent); font-size:13px; font-family:var(--font-ui);
   text-align:center; display:none;
 }
 .aramaic-notice.show { display:block; }
@@ -196,9 +196,9 @@ body { background:var(--bg-deep); color:var(--text-primary); font-family:var(--f
 /* ═══ MORPHEME COLOUR LAYERS ═══
  * Each .s segment carries an m-<class>. The L-<class> wrapper on #reader
  * turns its colour on. stm has no layer — it is the resting text colour. */
-.L-pfx  .s.m-pfxc { color:var(--m-pfxc); }
-.L-pfx  .s.m-pfxa { color:var(--m-pfxa); }
-.L-pfx  .s.m-pfxp { color:var(--m-pfxp); }
+.L-pfxc .s.m-pfxc { color:var(--m-pfxc); font-weight:600; }
+.L-pfxa .s.m-pfxa { color:var(--m-pfxa); }
+.L-pfxp .s.m-pfxp { color:var(--m-pfxp); }
 .L-pfm  .s.m-pfm { color:var(--m-pfm); font-weight:600; }
 .L-vbs  .s.m-vbs { color:var(--m-vbs); font-weight:600; }
 .L-vbe  .s.m-vbe { color:var(--m-vbe); }
@@ -233,7 +233,7 @@ body { background:var(--bg-deep); color:var(--text-primary); font-family:var(--f
 .w.arc::after {
   content:'\05D0\05E8'; /* אר */
   font-family:var(--font-ui); font-size:0.32em; vertical-align:super;
-  color:var(--m-pfxc); opacity:.7; margin-right:1px; pointer-events:none;
+  color:var(--m-uvf); opacity:.85; margin-right:1px; pointer-events:none;
 }
 
 /* ═══ GLOSSES ═══ */
@@ -334,9 +334,9 @@ body { background:var(--bg-deep); color:var(--text-primary); font-family:var(--f
 
 /* Morpheme colouring inside the translit hint mirrors the Hebrew: each
    piece lights up only when ITS layer is on (same toggles, same hues). */
-.L-translit.L-pfx .tr-hint .m-pfxc { color:var(--m-pfxc); }
-.L-translit.L-pfx .tr-hint .m-pfxa { color:var(--m-pfxa); }
-.L-translit.L-pfx .tr-hint .m-pfxp { color:var(--m-pfxp); }
+.L-translit.L-pfxc .tr-hint .m-pfxc { color:var(--m-pfxc); font-weight:600; }
+.L-translit.L-pfxa .tr-hint .m-pfxa { color:var(--m-pfxa); }
+.L-translit.L-pfxp .tr-hint .m-pfxp { color:var(--m-pfxp); }
 .L-translit.L-pfm .tr-hint .m-pfm { color:var(--m-pfm); }
 .L-translit.L-vbs .tr-hint .m-vbs { color:var(--m-vbs); }
 .L-translit.L-vbe .tr-hint .m-vbe { color:var(--m-vbe); }
@@ -530,7 +530,15 @@ details.lg-sec > .lg-row:last-child { padding-bottom:10px; }
 <div id="app">
   <div class="toolbar">
     <button class="tab-bare active" onclick="setBare()">Bare</button>
-    <button class="tab-bare" onclick="setAll()">All</button>
+    <div class="cat-wrap" id="presetWrap">
+      <button class="tab-bare" onclick="toggleDrop('preset')">Presets <span class="cat-arrow">&#x25BE;</span></button>
+      <div class="cat-drop" id="presetDrop">
+        <div class="cd-item" onclick="setPreset('novice')"><span class="cd-name">Novice</span><span class="cd-swatch" style="background:#66bb6a"></span></div>
+        <div class="cd-item" onclick="setPreset('intermediate')"><span class="cd-name">Intermediate</span><span class="cd-swatch" style="background:#f59e0b"></span></div>
+        <div class="cd-item" onclick="setPreset('advanced')"><span class="cd-name">Advanced</span><span class="cd-swatch" style="background:#ef5350"></span></div>
+        <div class="cd-item" onclick="setPreset('everything')"><span class="cd-name">Everything</span></div>
+      </div>
+    </div>
 
     <div class="cat-wrap" id="morphWrap">
       <button class="cat-tab" onclick="toggleDrop('morph')">
@@ -541,7 +549,7 @@ details.lg-sec > .lg-row:last-child { padding-bottom:10px; }
           <span class="cd-link" onclick="catAll('morph')">Select All</span>
           <span class="cd-link" onclick="catNone('morph')">Clear All</span>
         </div>
-        <div class="cd-group">Verb morphology — warm</div>
+        <div class="cd-group">Verb morphology — warm <span class="cd-link" onclick="event.stopPropagation(); grpAll('verb')">all</span> &middot; <span class="cd-link" onclick="event.stopPropagation(); grpNone('verb')">none</span></div>
         <div class="cd-item" data-l="pfm" onclick="togL('pfm')" style="--ac:var(--m-pfm)">
           <span class="cd-box"></span><span class="cd-name">Preformative</span>
           <span class="cd-swatch" style="background:var(--m-pfm)"></span>
@@ -554,7 +562,7 @@ details.lg-sec > .lg-row:last-child { padding-bottom:10px; }
           <span class="cd-box"></span><span class="cd-name">Verbal ending</span>
           <span class="cd-swatch" style="background:var(--m-vbe)"></span>
         </div>
-        <div class="cd-group">Noun morphology — cool</div>
+        <div class="cd-group">Noun morphology — cool <span class="cd-link" onclick="event.stopPropagation(); grpAll('noun')">all</span> &middot; <span class="cd-link" onclick="event.stopPropagation(); grpNone('noun')">none</span></div>
         <div class="cd-item" data-l="nme" onclick="togL('nme')" style="--ac:var(--m-nme)">
           <span class="cd-box"></span><span class="cd-name">Nominal ending</span>
           <span class="cd-swatch" style="background:var(--m-nme)"></span>
@@ -563,10 +571,18 @@ details.lg-sec > .lg-row:last-child { padding-bottom:10px; }
           <span class="cd-box"></span><span class="cd-name">Univalent final</span>
           <span class="cd-swatch" style="background:var(--m-uvf)"></span>
         </div>
-        <div class="cd-group">Attached elements</div>
-        <div class="cd-item" data-l="pfx" onclick="togL('pfx')" style="--ac:var(--m-pfxc)">
-          <span class="cd-box"></span><span class="cd-name">Prefix particles</span>
-          <span class="cd-swatch" style="background:var(--m-pfxc)"></span><span class="cd-swatch" style="background:var(--m-pfxa)"></span><span class="cd-swatch" style="background:var(--m-pfxp)"></span>
+        <div class="cd-group">Particles &amp; clitics <span class="cd-link" onclick="event.stopPropagation(); grpAll('part')">all</span> &middot; <span class="cd-link" onclick="event.stopPropagation(); grpNone('part')">none</span></div>
+        <div class="cd-item" data-l="pfxc" onclick="togL('pfxc')" style="--ac:var(--m-pfxc)">
+          <span class="cd-box"></span><span class="cd-name">Vav conjunction</span>
+          <span class="cd-swatch" style="background:var(--m-pfxc)"></span>
+        </div>
+        <div class="cd-item" data-l="pfxa" onclick="togL('pfxa')" style="--ac:var(--m-pfxa)">
+          <span class="cd-box"></span><span class="cd-name">Article</span>
+          <span class="cd-swatch" style="background:var(--m-pfxa)"></span>
+        </div>
+        <div class="cd-item" data-l="pfxp" onclick="togL('pfxp')" style="--ac:var(--m-pfxp)">
+          <span class="cd-box"></span><span class="cd-name">Preposition</span>
+          <span class="cd-swatch" style="background:var(--m-pfxp)"></span>
         </div>
         <div class="cd-item" data-l="prs" onclick="togL('prs')" style="--ac:var(--m-prs)">
           <span class="cd-box"></span><span class="cd-name">Pronominal suffix</span>
@@ -578,17 +594,22 @@ details.lg-sec > .lg-row:last-child { padding-bottom:10px; }
     <div class="cat-wrap" id="binyanWrap">
       <button class="cat-tab" onclick="togBinyan()">Binyan</button>
     </div>
-    <div class="cat-wrap" id="vformsWrap">
-      <button class="cat-tab" onclick="togVForms()" title="Background fill by conjugation: wayyiqtol green, perfect amber, imperfect blue, imperative red, participle purple, infinitive gray">Verb forms</button>
-    </div>
-    <div class="cat-wrap" id="cstrWrap">
-      <button class="cat-tab" onclick="togCstr()" title="Dashed underline on construct-state words — construct chains read as a dashed run ending at the absolute">Construct</button>
-    </div>
-    <div class="cat-wrap" id="genderWrap">
-      <button class="cat-tab" onclick="togGender()" title="Outline by gender: feminine pink/rounded, masculine blue/square; style = category (noun solid, adjective dashed, participle dotted)">Gender</button>
-    </div>
-    <div class="cat-wrap" id="volWrap">
-      <button class="cat-tab" onclick="togVol()" title="Red morpheme-echo glyphs: cohortative (paragogic he), al+yiqtol jussive (geresh = cut short). Apocopated jussives not detectable.">Volitives</button>
+    <div class="cat-wrap" id="grammarWrap">
+      <button class="cat-tab" onclick="toggleDrop('grammar')">Grammar <span class="cat-arrow">&#x25BE;</span> <span class="cd-count" id="grammarCount"></span></button>
+      <div class="cat-drop" id="grammarDrop">
+        <div class="cd-item" data-l="vforms" onclick="togL('vforms')" style="--ac:#66bb6a">
+          <span class="cd-box"></span><span class="cd-name">Verb-form fills</span>
+        </div>
+        <div class="cd-item" data-l="cstr" onclick="togL('cstr')" style="--ac:#4dd0e1">
+          <span class="cd-box"></span><span class="cd-name">Construct line</span>
+        </div>
+        <div class="cd-item" data-l="gender" onclick="togL('gender')" style="--ac:#f06ea9">
+          <span class="cd-box"></span><span class="cd-name">Gender outlines</span>
+        </div>
+        <div class="cd-item" data-l="vol" onclick="togL('vol')" style="--ac:#e05252">
+          <span class="cd-box"></span><span class="cd-name">Volitive glyphs</span>
+        </div>
+      </div>
     </div>
     <div class="cat-wrap" id="translitWrap">
       <button class="cat-tab" onclick="togTranslit()">Translit</button>
@@ -651,9 +672,9 @@ details.lg-sec > .lg-row:last-child { padding-bottom:10px; }
       <div class="lg-row"><span class="lg-sw" style="background:var(--m-vbe)"></span><span class="lg-name">Verbal ending</span><span class="lg-desc">verb — person/gender/number (קָטַלְתָּ)</span></div>
       <div class="lg-row"><span class="lg-sw" style="background:var(--m-nme)"></span><span class="lg-name">Nominal ending</span><span class="lg-desc">noun — ִים, ֹות, ֵי</span></div>
       <div class="lg-row"><span class="lg-sw" style="background:var(--m-uvf)"></span><span class="lg-name">Univalent final</span><span class="lg-desc">noun — directional he (אַרְצָה), paragogic</span></div>
-      <div class="lg-row"><span class="lg-sw" style="background:var(--m-pfxc)"></span><span class="lg-name">Vav conjunction</span><span class="lg-desc">glued ו — clause connection</span></div>
-      <div class="lg-row"><span class="lg-sw" style="background:var(--m-pfxa)"></span><span class="lg-name">Article</span><span class="lg-desc">glued ה — definiteness</span></div>
-      <div class="lg-row"><span class="lg-sw" style="background:var(--m-pfxp)"></span><span class="lg-name">Preposition</span><span class="lg-desc">glued ב / ל / כ / מ — case role</span></div>
+      <div class="lg-row"><span class="lg-sw" style="background:var(--m-pfxc)"></span><span class="lg-name">Vav conjunction</span><span class="lg-desc">glued ו — clause connection (bright white)</span></div>
+      <div class="lg-row"><span class="lg-sw" style="background:var(--m-pfxa)"></span><span class="lg-name">Article</span><span class="lg-desc">glued ה — definiteness (lemon)</span></div>
+      <div class="lg-row"><span class="lg-sw" style="background:var(--m-pfxp)"></span><span class="lg-name">Preposition</span><span class="lg-desc">glued ב / ל / כ / מ — case role (ice)</span></div>
       <div class="lg-row"><span class="lg-sw" style="background:var(--m-prs)"></span><span class="lg-name">Pronominal suffix</span><span class="lg-desc">attached pronoun (אֶחָיו)</span></div>
       <div class="lg-row"><span class="lg-sw" style="background:rgba(216,212,204,.4)"></span><span class="lg-name">Core / stem</span><span class="lg-desc">the lexeme root — left at text colour</span></div>
     </details>
@@ -722,7 +743,9 @@ const CUR_CHAPTER = parseInt('98', 10);
 const TOTAL_CHAPTERS = parseInt('150', 10);
 
 // ═══ LAYER DEFINITIONS ═══
-const MORPH_LAYERS = ['pfx','pfm','vbs','vbe','nme','uvf','prs'];
+const MORPH_LAYERS = ['pfm','vbs','vbe','nme','uvf','pfxc','pfxa','pfxp','prs'];
+const MORPH_GROUPS = { verb:['pfm','vbs','vbe'], noun:['nme','uvf'], part:['pfxc','pfxa','pfxp','prs'] };
+const GRAMMAR_LAYERS = ['vforms','cstr','gender','vol'];
 const OTHER_LAYERS = ['binyan','vforms','cstr','gender','vol','translit','gloss'];
 const ALL_LAYERS = [...MORPH_LAYERS, ...OTHER_LAYERS];
 
@@ -791,7 +814,10 @@ function loadPrefs() {
     const raw = localStorage.getItem(PREF_KEY);
     if (!raw) { S.layers.add('binyan'); S.layers.add('vol'); return; }   // binyan + volitives ON by default
     const p = JSON.parse(raw);
-    if (Array.isArray(p.layers)) S.layers = new Set(p.layers.filter(l => ALL_LAYERS.includes(l)));
+    if (Array.isArray(p.layers)) {
+      const ls = p.layers.flatMap(l => l === 'pfx' ? ['pfxc','pfxa','pfxp'] : [l]);
+      S.layers = new Set(ls.filter(l => ALL_LAYERS.includes(l)));
+    }
     else S.layers.add('binyan');
     if (typeof p.niqqud === 'boolean') S.niqqud = p.niqqud;
     if (typeof p.taamim === 'boolean') S.taamim = p.taamim;
@@ -824,10 +850,9 @@ function updateUI() {
   document.querySelector('#binyanWrap .cat-tab').classList.toggle('has-active', S.layers.has('binyan'));
   document.querySelector('#glossWrap .cat-tab').classList.toggle('has-active', S.layers.has('gloss'));
   document.querySelector('#translitWrap .cat-tab').classList.toggle('has-active', S.layers.has('translit'));
-  document.querySelector('#vformsWrap .cat-tab').classList.toggle('has-active', S.layers.has('vforms'));
-  document.querySelector('#cstrWrap .cat-tab').classList.toggle('has-active', S.layers.has('cstr'));
-  document.querySelector('#genderWrap .cat-tab').classList.toggle('has-active', S.layers.has('gender'));
-  document.querySelector('#volWrap .cat-tab').classList.toggle('has-active', S.layers.has('vol'));
+  const gc = GRAMMAR_LAYERS.filter(l => S.layers.has(l)).length;
+  document.querySelector('#grammarWrap .cat-tab').classList.toggle('has-active', gc > 0);
+  document.getElementById('grammarCount').textContent = gc ? gc : '';
   r.classList.toggle('no-hebrew', !S.hebrew);
   document.getElementById('hebrewBtn').style.opacity = S.hebrew ? '1' : '.35';
   document.getElementById('glossBandLbl').textContent = GLOSS_BAND_LBL[S.glossBand];
@@ -884,6 +909,20 @@ function setBare() { S.layers = new Set(); closeAllDrops(); updateUI(); }
 function setAll() { S.layers = new Set(ALL_LAYERS); closeAllDrops(); updateUI(); }
 function catAll(cat) { MORPH_LAYERS.forEach(l => S.layers.add(l)); updateUI(); }
 function catNone(cat) { MORPH_LAYERS.forEach(l => S.layers.delete(l)); updateUI(); }
+function grpAll(g) { MORPH_GROUPS[g].forEach(l => S.layers.add(l)); updateUI(); }
+function grpNone(g) { MORPH_GROUPS[g].forEach(l => S.layers.delete(l)); updateUI(); }
+// Presets — one-tap bundles (novice -> everything)
+const PRESETS = {
+  novice:       ['vforms','gloss'],
+  intermediate: ['vforms','gloss','binyan','vol','pfxc','pfxa','pfxp','prs'],
+  advanced:     ['binyan','vol','vforms','cstr','gender',
+                 'pfm','vbs','vbe','nme','uvf','pfxc','pfxa','pfxp','prs'],
+  everything:   null,   // resolved to ALL_LAYERS at call time
+};
+function setPreset(name) {
+  S.layers = new Set(PRESETS[name] || ALL_LAYERS);
+  closeAllDrops(); updateUI();
+}
 
 function toggleDrop(cat) {
   const drop = document.getElementById(cat+'Drop');
