@@ -129,6 +129,7 @@ def tf_api():
             'g_pfm_utf8 g_vbs_utf8 g_lex_utf8 g_vbe_utf8 '
             'g_nme_utf8 g_prs_utf8 g_uvf_utf8 '
             'vs vt sp ps gn nu st lex ls language gloss freq_lex '
+            'prs_ps prs_gn prs_nu '
         )
         TF = Fabric(locations=BHSA_TF, silent=True)
         _api = TF.load(features, silent=True)
@@ -225,6 +226,22 @@ def segment_surface(surface, morphemes):
     return segs
 
 
+# ETCBC transliteration -> Hebrew consonants (lexeme display). Suffix
+# markers [ = verb, / = noun, = = disambiguator are stripped.
+_ETCBC_HEB = {
+    '>': 'א', 'B': 'ב', 'G': 'ג', 'D': 'ד', 'H': 'ה', 'W': 'ו', 'Z': 'ז',
+    'X': 'ח', 'V': 'ט', 'J': 'י', 'K': 'כ', 'L': 'ל', 'M': 'מ', 'N': 'נ',
+    'S': 'ס', '<': 'ע', 'P': 'פ', 'Y': 'צ', 'Q': 'ק', 'R': 'ר',
+    'F': 'שׂ', 'C': 'שׁ', 'T': 'ת',
+}
+
+
+def etcbc_to_hebrew(lex):
+    """Render an ETCBC lexeme string in Hebrew letters (the tap panel's
+    most-read datum — raw ASCII translit was audit finding #1)."""
+    return ''.join(_ETCBC_HEB.get(c, '') for c in lex)
+
+
 def word_record(api, w):
     """Build the JSON record for one BHSA word-slot."""
     F, L = api.F, api.L
@@ -256,6 +273,7 @@ def word_record(api, w):
     lex_node = L.u(w, otype='lex')
     if lex_node:
         rec['lem'] = F.lex.v(w) or ''
+        rec['lemh'] = etcbc_to_hebrew(rec['lem'])
         gl = F.gloss.v(lex_node[0])
         if gl:
             rec['gl'] = gl
@@ -295,6 +313,15 @@ def word_record(api, w):
         lg = lexical_gender().get(rec.get('lem', ''))
         if lg:
             rec['gn'] = lg
+
+    # Pronominal-suffix person/gender/number (panel display; the suffix
+    # paradigm is its own sheet in Stan's BH-vocab tracking)
+    pp, pg, pn = F.prs_ps.v(w), F.prs_gn.v(w), F.prs_nu.v(w)
+    if pp and pp not in ('NA', 'unknown', 'n/a'):
+        rec['sfx'] = '{} {}{}'.format(
+            {'p1': '1', 'p2': '2', 'p3': '3'}.get(pp, pp),
+            {'m': 'm', 'f': 'f'}.get(pg, ''),
+            {'sg': 's', 'pl': 'p', 'du': 'd'}.get(pn, ''))
 
     if F.language.v(w) == 'Aramaic':
         rec['arc'] = True
@@ -649,8 +676,13 @@ def generate_chapter(book_code, chapter):
         # Syntactically certain jussives: negative al + yiqtol (60 corpus-wide)
         for i in range(1, len(recs)):
             r = recs[i][0]
+            # BHSA lexeme '>L' is BOTH negative al AND preposition el —
+            # gate on sp=nega or the glyph marks 'el + imperfect' as jussive
+            # (caught by the 2026-06-12 implementation audit: most shipped
+            # glyphs were the preposition).
+            prev = recs[i - 1][0]
             if r.get('vt') == 'impf' and 'vol' not in r \
-                    and recs[i - 1][0].get('lem') == '>L':
+                    and prev.get('lem') == '>L' and prev.get('sp') == 'nega':
                 r['vol'] = 'jus'
         line_breaks = set()
         if sense and verse in sense:
