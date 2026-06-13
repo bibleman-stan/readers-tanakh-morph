@@ -255,13 +255,15 @@ body { background:var(--bg-deep); color:var(--text-primary); font-family:var(--f
    chapter is scannable at a glance. Fill is a low-alpha tint so the
    morpheme text-colours stay readable on top. Underline stays binyan's
    channel (same separation as the Logos filters). */
-.L-vforms .w { border-radius:5px; }
-.L-vforms .w.t-wayq { background:rgba(102,187,106,.17); }
-.L-vforms .w.t-perf { background:rgba(245,158,11,.15); }
-.L-vforms .w.t-impf { background:rgba(96,165,250,.16); }
-.L-vforms .w.t-impv { background:rgba(239,83,80,.18); }
-.L-vforms .w.t-ptca, .L-vforms .w.t-ptcp { background:rgba(192,132,252,.16); }
-.L-vforms .w.t-infc, .L-vforms .w.t-infa { background:rgba(160,160,170,.16); }
+.L-vf-wayq .w.t-wayq, .L-vf-perf .w.t-perf, .L-vf-impf .w.t-impf,
+.L-vf-impv .w.t-impv, .L-vf-ptc .w.t-ptca, .L-vf-ptc .w.t-ptcp,
+.L-vf-inf .w.t-infc, .L-vf-inf .w.t-infa { border-radius:5px; }
+.L-vf-wayq .w.t-wayq { background:rgba(102,187,106,.17); }
+.L-vf-perf .w.t-perf { background:rgba(245,158,11,.15); }
+.L-vf-impf .w.t-impf { background:rgba(96,165,250,.16); }
+.L-vf-impv .w.t-impv { background:rgba(239,83,80,.18); }
+.L-vf-ptc .w.t-ptca, .L-vf-ptc .w.t-ptcp { background:rgba(192,132,252,.16); }
+.L-vf-inf .w.t-infc, .L-vf-inf .w.t-infa { background:rgba(160,160,170,.16); }
 
 /* ═══ CONSTRUCT-STATE MARKER (noun chains) ═══
    Dashed underline on construct-state words: a construct chain reads as
@@ -597,9 +599,26 @@ details.lg-sec > .lg-row:last-child { padding-bottom:10px; }
     <div class="cat-wrap" id="grammarWrap">
       <button class="cat-tab" onclick="toggleDrop('grammar')">Grammar <span class="cat-arrow">&#x25BE;</span> <span class="cd-count" id="grammarCount"></span></button>
       <div class="cat-drop" id="grammarDrop">
-        <div class="cd-item" data-l="vforms" onclick="togL('vforms')" style="--ac:#66bb6a">
-          <span class="cd-box"></span><span class="cd-name">Verb-form fills</span>
+        <div class="cd-group">Verb-form fills <span class="cd-link" onclick="event.stopPropagation(); vfAll()">all</span> &middot; <span class="cd-link" onclick="event.stopPropagation(); vfNone()">none</span></div>
+        <div class="cd-item" data-l="vf-wayq" onclick="togL('vf-wayq')" style="--ac:#66bb6a">
+          <span class="cd-box"></span><span class="cd-name">Wayyiqtol</span><span class="cd-swatch" style="background:rgba(102,187,106,.8)"></span>
         </div>
+        <div class="cd-item" data-l="vf-perf" onclick="togL('vf-perf')" style="--ac:#f59e0b">
+          <span class="cd-box"></span><span class="cd-name">Perfect</span><span class="cd-swatch" style="background:rgba(245,158,11,.8)"></span>
+        </div>
+        <div class="cd-item" data-l="vf-impf" onclick="togL('vf-impf')" style="--ac:#60a5fa">
+          <span class="cd-box"></span><span class="cd-name">Imperfect</span><span class="cd-swatch" style="background:rgba(96,165,250,.8)"></span>
+        </div>
+        <div class="cd-item" data-l="vf-impv" onclick="togL('vf-impv')" style="--ac:#ef5350">
+          <span class="cd-box"></span><span class="cd-name">Imperative</span><span class="cd-swatch" style="background:rgba(239,83,80,.8)"></span>
+        </div>
+        <div class="cd-item" data-l="vf-ptc" onclick="togL('vf-ptc')" style="--ac:#c084fc">
+          <span class="cd-box"></span><span class="cd-name">Participle</span><span class="cd-swatch" style="background:rgba(192,132,252,.8)"></span>
+        </div>
+        <div class="cd-item" data-l="vf-inf" onclick="togL('vf-inf')" style="--ac:#a0a0aa">
+          <span class="cd-box"></span><span class="cd-name">Infinitive</span><span class="cd-swatch" style="background:rgba(160,160,170,.8)"></span>
+        </div>
+        <div class="cd-group">Other</div>
         <div class="cd-item" data-l="cstr" onclick="togL('cstr')" style="--ac:#4dd0e1">
           <span class="cd-box"></span><span class="cd-name">Construct line</span>
         </div>
@@ -745,8 +764,9 @@ const TOTAL_CHAPTERS = parseInt('1', 10);
 // ═══ LAYER DEFINITIONS ═══
 const MORPH_LAYERS = ['pfm','vbs','vbe','nme','uvf','pfxc','pfxa','pfxp','prs'];
 const MORPH_GROUPS = { verb:['pfm','vbs','vbe'], noun:['nme','uvf'], part:['pfxc','pfxa','pfxp','prs'] };
-const GRAMMAR_LAYERS = ['vforms','cstr','gender','vol'];
-const OTHER_LAYERS = ['binyan','vforms','cstr','gender','vol','translit','gloss'];
+const VFORM_LAYERS = ['vf-wayq','vf-perf','vf-impf','vf-impv','vf-ptc','vf-inf'];
+const GRAMMAR_LAYERS = [...VFORM_LAYERS,'cstr','gender','vol'];
+const OTHER_LAYERS = ['binyan','vf-wayq','vf-perf','vf-impf','vf-impv','vf-ptc','vf-inf','cstr','gender','vol','translit','gloss'];
 const ALL_LAYERS = [...MORPH_LAYERS, ...OTHER_LAYERS];
 
 // Binyan code -> CSS colour-class suffix (matches src/books.py BINYANIM 'color').
@@ -815,7 +835,7 @@ function loadPrefs() {
     if (!raw) { S.layers.add('binyan'); S.layers.add('vol'); return; }   // binyan + volitives ON by default
     const p = JSON.parse(raw);
     if (Array.isArray(p.layers)) {
-      const ls = p.layers.flatMap(l => l === 'pfx' ? ['pfxc','pfxa','pfxp'] : [l]);
+      const ls = p.layers.flatMap(l => l === 'pfx' ? ['pfxc','pfxa','pfxp'] : (l === 'vforms' ? [...VFORM_LAYERS] : [l]));
       S.layers = new Set(ls.filter(l => ALL_LAYERS.includes(l)));
     }
     else S.layers.add('binyan');
@@ -911,11 +931,13 @@ function catAll(cat) { MORPH_LAYERS.forEach(l => S.layers.add(l)); updateUI(); }
 function catNone(cat) { MORPH_LAYERS.forEach(l => S.layers.delete(l)); updateUI(); }
 function grpAll(g) { MORPH_GROUPS[g].forEach(l => S.layers.add(l)); updateUI(); }
 function grpNone(g) { MORPH_GROUPS[g].forEach(l => S.layers.delete(l)); updateUI(); }
+function vfAll() { VFORM_LAYERS.forEach(l => S.layers.add(l)); updateUI(); }
+function vfNone() { VFORM_LAYERS.forEach(l => S.layers.delete(l)); updateUI(); }
 // Presets — one-tap bundles (novice -> everything)
 const PRESETS = {
-  novice:       ['vforms','gloss'],
-  intermediate: ['vforms','gloss','binyan','vol','pfxc','pfxa','pfxp','prs'],
-  advanced:     ['binyan','vol','vforms','cstr','gender',
+  novice:       [...VFORM_LAYERS,'gloss'],
+  intermediate: [...VFORM_LAYERS,'gloss','binyan','vol','pfxc','pfxa','pfxp','prs'],
+  advanced:     ['binyan','vol',...VFORM_LAYERS,'cstr','gender',
                  'pfm','vbs','vbe','nme','uvf','pfxc','pfxa','pfxp','prs'],
   everything:   null,   // resolved to ALL_LAYERS at call time
 };
