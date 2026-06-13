@@ -427,10 +427,51 @@ details.lg-sec > .lg-row:last-child { padding-bottom:10px; }
 .lg-foot p { color:var(--text-muted); margin-bottom:10px; }
 .lg-worked { font-family:var(--font-heb); font-size:30px; direction:rtl; text-align:center; padding:8px 0 4px; }
 
+/* burger + close hidden on desktop */
+.tb-burger, .tb-close { display:none; }
+
 @media (max-width:768px) {
-  .toolbar { padding:8px 14px; gap:6px; flex-wrap:wrap; }
   #reader { padding:20px 16px 100px; }
   #panel { width:calc(100% - 16px); right:8px; bottom:8px; }
+
+  /* COLLAPSED: slim bar — burger + chapter nav + help only */
+  .toolbar { padding:8px 12px; gap:8px; }
+  .toolbar > .tab-bare, .toolbar > .cat-wrap, .toolbar > .tb-sep,
+  .toolbar > .icon-btn { display:none; }
+  .tb-burger {
+    display:inline-flex; align-items:center; gap:6px;
+    background:var(--bg-panel); color:var(--text-secondary);
+    border:1px solid var(--border-medium); border-radius:8px;
+    padding:7px 12px; font-size:13px; font-family:var(--font-ui);
+    cursor:pointer; white-space:nowrap;
+  }
+
+  /* OPEN: the toolbar becomes a full-height scrollable layers sheet */
+  .toolbar.sheet-open {
+    position:fixed; inset:0; max-height:100dvh; overflow-y:auto;
+    flex-direction:column; align-items:stretch; gap:4px;
+    padding:14px 16px 40px; z-index:3000;
+  }
+  body.sheet-lock { overflow:hidden; }
+  .toolbar.sheet-open .tb-burger { display:none; }
+  .toolbar.sheet-open .tb-close {
+    display:block; position:sticky; top:0; align-self:flex-end;
+    background:var(--bg-panel); color:var(--text-secondary);
+    border:1px solid var(--border-medium); border-radius:8px;
+    padding:7px 12px; font-size:13px; font-family:var(--font-ui);
+    cursor:pointer; z-index:1;
+  }
+  .toolbar.sheet-open > .tab-bare,
+  .toolbar.sheet-open > .icon-btn { display:block; width:100%; text-align:left; padding:10px 12px; }
+  .toolbar.sheet-open > .tb-sep { display:block; height:1px; width:100%; background:var(--border-subtle); margin:6px 0; }
+  .toolbar.sheet-open > .cat-wrap { display:block; width:100%; }
+  .toolbar.sheet-open .cat-tab { width:100%; text-align:left; padding:10px 12px; }
+  /* every dropdown renders as an always-open section inside the sheet */
+  .toolbar.sheet-open .cat-drop {
+    display:block; position:static; box-shadow:none; border:0;
+    border-left:2px solid var(--border-subtle); border-radius:0;
+    margin:0 0 6px 10px; max-height:none;
+  }
 }
 @media (max-width:600px) {
   #reader { padding:20px 22px 100px; }
@@ -530,7 +571,9 @@ details.lg-sec > .lg-row:last-child { padding-bottom:10px; }
 </div>
 
 <div id="app">
-  <div class="toolbar">
+  <div class="toolbar" id="toolbar">
+    <button class="tb-burger" id="tbToggle" onclick="togSheet()" aria-label="Layers menu">&#9776; Layers</button>
+    <button class="tb-close" onclick="togSheet()" aria-label="Close">&#x2715; Close</button>
     <button class="tab-bare active" onclick="setBare()">Bare</button>
     <div class="cat-wrap" id="presetWrap">
       <button class="tab-bare" onclick="toggleDrop('preset')">Presets <span class="cat-arrow">&#x25BE;</span></button>
@@ -924,6 +967,10 @@ function togTaamim() {
   S.taamim = !S.taamim;
   if (S.taamim) S.niqqud = true;     // accents imply points
   updateUI();
+}
+function togSheet() {
+  document.getElementById('toolbar').classList.toggle('sheet-open');
+  document.body.classList.toggle('sheet-lock');
 }
 function setBare() { S.layers = new Set(); closeAllDrops(); updateUI(); }
 function setAll() { S.layers = new Set(ALL_LAYERS); closeAllDrops(); updateUI(); }
