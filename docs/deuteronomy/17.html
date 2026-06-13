@@ -1142,8 +1142,10 @@ function render() {
     // Gender: colour constant across categories (f pink / m blue), mark
     // STYLE tells the category — noun solid, adjective dashed, participle
     // dotted (Stan's principle 3). Finite-verb agreement stays panel-only.
+    // Common nouns + adjectives + participles, AND personal proper nouns
+    // (head.pn — Hannah, Moses; divine name + places excluded in the data).
     const GENDER_SP = (head.sp === 'subs' || head.sp === 'adjv');
-    if (head.gn && (GENDER_SP || isPtc)) {
+    if (head.gn && (GENDER_SP || isPtc || head.pn)) {
       wCls += ' gn-' + head.gn;
       wCls += isPtc ? ' gc-p' : (head.sp === 'adjv' ? ' gc-a' : ' gc-n');
     }

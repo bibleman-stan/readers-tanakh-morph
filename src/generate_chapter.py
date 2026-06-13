@@ -78,6 +78,9 @@ PREFIX_POS = {'prep', 'art', 'conj'}
 _api = None
 _lexgen = None
 
+# Divine-name lexemes excluded from personal-name gender boxing (see below).
+_DIVINE_NAMES = {'JHWH/', 'JH/', 'JHWH=/'}
+
 # Verbs whose R1 assimilates atypically (ל acting like I-Nun).
 _ASSIM_LEX = {'LQX['}
 
@@ -133,7 +136,7 @@ def tf_api():
             'g_pfm_utf8 g_vbs_utf8 g_lex_utf8 g_vbe_utf8 '
             'g_nme_utf8 g_prs_utf8 g_uvf_utf8 '
             'vs vt sp ps gn nu st lex ls language gloss freq_lex '
-            'prs_ps prs_gn prs_nu '
+            'prs_ps prs_gn prs_nu nametype '
         )
         TF = Fabric(locations=BHSA_TF, silent=True)
         _api = TF.load(features, silent=True)
@@ -336,6 +339,16 @@ def word_record(api, w):
             {'p1': '1', 'p2': '2', 'p3': '3'}.get(pp, pp),
             {'m': 'm', 'f': 'f'}.get(pg, ''),
             {'sg': 's', 'pl': 'p', 'du': 'd'}.get(pn, ''))
+
+    # Personal-name gender: proper nouns of PEOPLE carry gn in BHSA
+    # (Hannah f, Moses m). The gender layer marks them like nouns, but the
+    # divine name is excluded — it is nametype=pers,gn=m too and a blue box
+    # on the Tetragrammaton 6,828× is noise, not signal. Places (topo) and
+    # the divine name therefore stay unboxed.
+    if sp == 'nmpr' and rec.get('gn') in ('m', 'f') \
+            and 'pers' in (F.nametype.v(w) or '') \
+            and rec.get('lem') not in _DIVINE_NAMES:
+        rec['pn'] = True
 
     if F.language.v(w) == 'Aramaic':
         rec['arc'] = True
