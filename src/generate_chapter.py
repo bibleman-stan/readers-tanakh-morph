@@ -32,6 +32,7 @@ import unicodedata
 _HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, _HERE)
 from books import BOOKS, BINYANIM, TENSES
+import root_match
 
 _REPO_ROOT = os.path.dirname(_HERE)
 BUILD_DIR = os.path.join(_REPO_ROOT, 'build')
@@ -76,6 +77,9 @@ PREFIX_POS = {'prep', 'art', 'conj'}
 
 _api = None
 _lexgen = None
+
+# Verbs whose R1 assimilates atypically (ל acting like I-Nun).
+_ASSIM_LEX = {'LQX['}
 
 
 def lexical_gender():
@@ -301,6 +305,16 @@ def word_record(api, w):
             vbe = (F.g_vbe_utf8.v(w) or '').replace(_BHSA_MARKER, '')
             if 'ה' in vbe:
                 rec['vol'] = 'coh'
+
+    # Root skeleton (Shoresh layer) — verbs only at launch. Fail-closed:
+    # conf 0 => panel shows the root but nothing is marked in text.
+    if sp == 'verb' and rec.get('lem', '').endswith('['):
+        stm = next((g['t'] for g in rec.get('segs', []) if g['m'] == 'stm'), None)
+        if stm:
+            rt = root_match.analyze(rec['lem'], stm,
+                                    lqx_exception=rec['lem'] in _ASSIM_LEX)
+            if rt:
+                rec['rt'] = rt
 
     for feat in ('ps', 'gn', 'nu', 'st'):
         val = getattr(F, feat).v(w)
